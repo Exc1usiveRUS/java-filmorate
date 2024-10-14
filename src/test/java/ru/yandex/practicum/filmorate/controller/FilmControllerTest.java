@@ -177,7 +177,7 @@ public class FilmControllerTest {
     }
 
     @Test
-    public void ErrorCreateFilmWithWrongReleaseDate() {
+    public void errorCreateFilmWithWrongReleaseDate() {
         Film film = Film.builder()
                 .name("Test film")
                 .description("Test description")
