@@ -78,6 +78,7 @@ public class UserControllerTest {
                 .filter(v -> v.getPropertyPath().toString().equals("email"))
                 .count());
     }
+
     @Test
     public void errorCreateUserWithNullEmail() {
         User user = User.builder()
