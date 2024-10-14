@@ -40,7 +40,7 @@ public class UserController {
             user.setName(updatedUser.getName());
         }
         if (updatedUser.getEmail() != null && !updatedUser.getEmail().isBlank()
-                && updatedUser.getEmail().matches( "^[\\w-.]+@[\\w-]+(\\.[\\w-]+)*\\.[a-z]{2,}$")) {
+                && updatedUser.getEmail().matches("^[\\w-.]+@[\\w-]+(\\.[\\w-]+)*\\.[a-z]{2,}$")) {
             user.setEmail(updatedUser.getEmail());
         }
         if (updatedUser.getLogin() != null && !updatedUser.getLogin().isBlank()) {
