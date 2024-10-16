@@ -15,6 +15,7 @@ import java.util.Map;
 @Slf4j
 public class UserController {
 
+    private int nextId = 1;
     private final Map<Integer, User> users = new HashMap<>();
 
     @GetMapping
@@ -31,7 +32,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User updateUser(@RequestBody User updatedUser) {
+    public User updateUser(@Valid @RequestBody User updatedUser) {
         if (!users.containsKey(updatedUser.getId())) {
             throw new ValidationException("Пользователь с таким id не найден");
         }
@@ -55,11 +56,6 @@ public class UserController {
     }
 
     private int getNextId() {
-        int currentMaxId = users.keySet()
-                .stream()
-                .mapToInt(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+        return nextId++;
     }
 }

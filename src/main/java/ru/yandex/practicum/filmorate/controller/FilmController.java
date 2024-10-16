@@ -15,6 +15,7 @@ import java.util.Map;
 @Slf4j
 public class FilmController {
 
+    private int nextId = 1;
     private final Map<Integer, Film> films = new HashMap<>();
 
     @GetMapping
@@ -31,7 +32,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film updateFilm(@RequestBody Film updatedFilm) {
+    public Film updateFilm(@Valid @RequestBody Film updatedFilm) {
         if (!films.containsKey(updatedFilm.getId())) {
             throw new ValidationException("Фильм c таким id не найден");
         }
@@ -54,11 +55,6 @@ public class FilmController {
     }
 
     private int getNextId() {
-        int currentMaxId = films.keySet()
-                .stream()
-                .mapToInt(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+        return nextId++;
     }
 }
