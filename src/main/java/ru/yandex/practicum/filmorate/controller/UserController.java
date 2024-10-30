@@ -1,61 +1,78 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import jakarta.validation.ValidationException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
 @Slf4j
+@RequiredArgsConstructor
 public class UserController {
 
-    private int nextId = 1;
-    private final Map<Integer, User> users = new HashMap<>();
+    private final UserService userService;
 
     @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     public Collection<User> getUsers() {
-        return users.values();
+        return userService.getUsers();
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public User createUser(@Valid @RequestBody User user) {
-        user.setId(getNextId());
         log.info("Добавлен пользователь: {}", user);
-        users.put(user.getId(), user);
-        return user;
+        return userService.createUser(user);
     }
 
     @PutMapping
+    @ResponseStatus(HttpStatus.OK)
     public User updateUser(@Valid @RequestBody User updatedUser) {
-        if (!users.containsKey(updatedUser.getId())) {
-            throw new ValidationException("Пользователь с таким id не найден");
-        }
-        User user = users.get(updatedUser.getId());
-        if (updatedUser.getName() != null && !updatedUser.getName().isBlank()) {
-            user.setName(updatedUser.getName());
-        }
-        if (updatedUser.getEmail() != null && !updatedUser.getEmail().isBlank()
-                && updatedUser.getEmail().matches("^[\\w-.]+@[\\w-]+(\\.[\\w-]+)*\\.[a-z]{2,}$")) {
-            user.setEmail(updatedUser.getEmail());
-        }
-        if (updatedUser.getLogin() != null && !updatedUser.getLogin().isBlank()) {
-            user.setLogin(updatedUser.getLogin());
-        }
-        if (updatedUser.getBirthday() != null) {
-            user.setBirthday(updatedUser.getBirthday());
-        }
-        log.info("Обновлен пользователь: {}", user);
-        users.put(updatedUser.getId(), updatedUser);
-        return user;
+        log.info("Обновлен пользователь: {}", updatedUser);
+        return userService.updateUser(updatedUser);
     }
 
-    private int getNextId() {
-        return nextId++;
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/{id}")
+    public User getUser(@PathVariable int id) {
+        return userService.getUserById(id);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable int id,
+                          @PathVariable int friendId) {
+        userService.addFriend(id, friendId);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/{id}/friends")
+    public Collection<User> getFriends(@PathVariable int id) {
+        return userService.getFriends(id);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> getCommonFriends(@PathVariable int id,
+                                             @PathVariable("otherId") int friendId) {
+        return userService.getCommonFriends(id, friendId);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void deleteFriend(@PathVariable int id, @PathVariable int friendId) {
+        userService.deleteFriend(id, friendId);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable int id) {
+        userService.deleteUser(id);
     }
 }
