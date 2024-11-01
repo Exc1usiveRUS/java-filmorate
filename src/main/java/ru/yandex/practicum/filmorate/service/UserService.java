@@ -40,12 +40,11 @@ public class UserService {
         User user = getUserById(userId);
         User friend = getUserById(friendId);
 
-        if (!user.getFriends().contains(friendId)) {
-            throw new NotFoundException("Пользователь с id " + friendId + " не в друзьях");
+        if (user.getFriends().remove(friendId)) {
+            log.info("Пользователь с id {} удален из друзей", friendId);
         }
-        user.getFriends().remove(friendId);
         friend.getFriends().remove(userId);
-        log.info("Пользователь с id {} удален из друзей", friendId);
+
     }
 
     public Collection<User> getCommonFriends(int userId, int friendId) {
