@@ -20,13 +20,17 @@ public class FilmService {
 
     public void addLike(int filmId, int userId) {
         User user = userStorage.getUserById(userId);
-        filmStorage.getFilmById(filmId).getLikes().add(user.getId());
+        filmStorage.getFilmById(filmId)
+                .getLikes()
+                .add(user.getId());
         log.info("User {} liked film {}", userId, filmId);
     }
 
     public void deleteLike(int filmId, int userId) {
         User user = userStorage.getUserById(userId);
-        filmStorage.getFilmById(filmId).getLikes().remove(user.getId());
+        filmStorage.getFilmById(filmId)
+                .getLikes()
+                .remove(user.getId());
         log.info("Пользователь {} отменил лайк фильма {}", userId, filmId);
     }
 

@@ -4,10 +4,13 @@ import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -37,19 +40,27 @@ public class UserService {
         User user = getUserById(userId);
         User friend = getUserById(friendId);
 
+        if (!user.getFriends().contains(friendId)) {
+            throw new NotFoundException("Пользователь с id " + friendId + " не в друзьях");
+        }
         user.getFriends().remove(friendId);
-        log.info("Пользователь с id {} удален из друзей", friendId);
         friend.getFriends().remove(userId);
+        log.info("Пользователь с id {} удален из друзей", friendId);
     }
 
     public Collection<User> getCommonFriends(int userId, int friendId) {
         User user = getUserById(userId);
         User friend = getUserById(friendId);
 
-        return user.getFriends().stream()
-                .filter(friend.getFriends()::contains)
-                .map(userStorage::getUserById)
-                .toList();
+        Set<Integer> commons = new HashSet<>(user.getFriends());
+
+        if (commons.retainAll(friend.getFriends())) {
+            return commons.stream()
+                    .map(userStorage::getUserById)
+                    .toList();
+        } else {
+            throw new NotFoundException("Нет общих друзей");
+        }
     }
 
     public Collection<User> getFriends(int userId) {
