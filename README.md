@@ -1,2 +1,1 @@
-# java-filmorate
-Template repository for Filmorate project.
+![ER-Diograms.png](ER-Diograms.png)
