@@ -52,6 +52,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Collection<Film> getTopFilms(Integer count) {
         return new ArrayList<>(films.values());
     }
+
     @Override
     public Film getFilmById(Integer filmId) {
         if (!films.containsKey(filmId)) {
