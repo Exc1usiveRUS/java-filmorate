@@ -95,7 +95,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         delete(DELETE_QUERY, filmId);
     }
 
-        private Map<Integer, Set<Genre>> getAllGenres () {
+        private Map<Integer, Set<Genre>> getAllGenres() {
             Map<Integer, Set<Genre>> genres = new HashMap<>();
             return jdbc.query(QUERY_ALL_GENRES_FILMS, (ResultSet rs) -> {
                 while (rs.next()) {
@@ -108,7 +108,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             });
         }
 
-        private Set<Genre> getGenresByFilm (Integer filmId){
+        private Set<Genre> getGenresByFilm(Integer filmId) {
             return jdbc.query(QUERY_GENRES_BY_FILM, (ResultSet rs) -> {
                 Set<Genre> genres = new HashSet<>();
                 while (rs.next()) {
