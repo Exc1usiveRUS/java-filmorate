@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import jakarta.validation.constraints.*;
+import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.validation.MinimumDate;
 
 import java.time.LocalDate;
@@ -10,7 +12,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class Film {
     private Integer id;
     @NotBlank
@@ -22,8 +26,8 @@ public class Film {
     private LocalDate releaseDate;
     @Positive
     private int duration;
-    private final Set<Integer> likes = new HashSet<>();
-    private final Set<Genre> genres = new HashSet<>();
+    private Set<Integer> likes = new HashSet<>();
+    private Set<Genre> genres = new HashSet<>();
     private Mpa mpa;
 
 }

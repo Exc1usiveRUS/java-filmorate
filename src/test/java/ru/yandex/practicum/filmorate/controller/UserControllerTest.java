@@ -4,77 +4,59 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.*;
+
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.time.LocalDate;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class UserControllerTest {
+class UserControllerTest {
     private ValidatorFactory validatorFactory;
     private Validator validator;
 
-    UserController userController;
-
     @BeforeEach
-    public void beforeEach() {
+    void beforeAll() {
         validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
-        userController = new UserController(new UserService(new InMemoryUserStorage()));
     }
 
     @AfterEach
-    public void afterEach() {
+    void afterAll() {
         validatorFactory.close();
     }
 
     @Test
-    public void testCreateUser() {
-        userController.createUser(User.builder()
-                .email("test@fail.ru")
-                .login("testLogin")
-                .name("Вася")
-                .birthday(LocalDate.of(2000, 1, 1))
-                .build());
-        assertEquals(1, userController.getUsers().size());
+    void createUser() {
+        User user = User.builder()
+                .name("Test User")
+                .email("test@example.com")
+                .login("testUser")
+                .birthday(LocalDate.of(1990, 1, 1))
+                .build();
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertEquals(0, violations.size());
     }
 
     @Test
-    public void testUpdateUser() {
-        User user = User.builder()
-                .email("test@fail.ru")
-                .login("testLogin")
-                .name("Вася")
-                .birthday(LocalDate.of(2000, 1, 1))
-                .build();
-        userController.createUser(user);
-        assertEquals(1, userController.getUsers().size());
-        userController.updateUser(User.builder()
-                .id(1)
-                .name("Петя")
-                .build());
-
-        User actualUser = userController.getUsers().stream().toList().getFirst();
-        assertEquals(1, userController.getUsers().size());
-        assertEquals("Петя", actualUser.getName());
+    void errorCreateEmptyUser() {
+        User user = User.builder().build();
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
     }
 
     @Test
-    public void errorCreateUserWithEmptyEmail() {
+    void errorCreateInvalidEmail() {
         User user = User.builder()
-                .email("")
-                .login("testLogin")
-                .name("Вася")
-                .birthday(LocalDate.of(2000, 1, 1))
+                .email("testemail.com@")
+                .login("testUser")
+                .name("Test User")
+                .birthday(LocalDate.of(1990, 1, 1))
                 .build();
+
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertEquals(1, violations.stream()
                 .filter(v -> v.getPropertyPath().toString().equals("email"))
@@ -82,13 +64,14 @@ public class UserControllerTest {
     }
 
     @Test
-    public void errorCreateUserWithNullEmail() {
+    void errorCreateNullEmail() {
         User user = User.builder()
                 .email(null)
-                .login("testLogin")
-                .name("Вася")
-                .birthday(LocalDate.of(2000, 1, 1))
+                .login("testUser")
+                .name("Test User")
+                .birthday(LocalDate.of(1990, 1, 1))
                 .build();
+
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertEquals(1, violations.stream()
                 .filter(v -> v.getPropertyPath().toString().equals("email"))
@@ -96,55 +79,14 @@ public class UserControllerTest {
     }
 
     @Test
-    public void errorCreateUserWithInvalidFormatOfEmail() {
+    void errorCreateNullLogin() {
         User user = User.builder()
-                .email("testmailru@")
-                .login("testLogin")
-                .name("Вася")
-                .birthday(LocalDate.of(2000, 1, 1))
-                .build();
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertEquals(1, violations.stream()
-                .filter(v -> v.getPropertyPath().toString().equals("email"))
-                .count());
-    }
-
-    @Test
-    public void errorCreateUserWithBlankEmail() {
-        User user = User.builder()
-                .email(" ")
-                .login("testLogin")
-                .name("Вася")
-                .birthday(LocalDate.of(2000, 1, 1))
-                .build();
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertEquals(2, violations.stream()
-                .filter(v -> v.getPropertyPath().toString().equals("email"))
-                .count());
-    }
-
-    @Test
-    public void errorCreateUserWithEmptyLogin() {
-        User user = User.builder()
-                .email("test@fail.ru")
-                .login("")
-                .name("Вася")
-                .birthday(LocalDate.of(2000, 1, 1))
-                .build();
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertEquals(2, violations.stream()
-                .filter(v -> v.getPropertyPath().toString().equals("login"))
-                .count());
-    }
-
-    @Test
-    public void errorCreateUserWithNullLogin() {
-        User user = User.builder()
-                .email("test@fail.ru")
+                .email("test@example.com")
                 .login(null)
-                .name("Вася")
-                .birthday(LocalDate.of(2000, 1, 1))
+                .name("Test User")
+                .birthday(LocalDate.of(1990, 1, 1))
                 .build();
+
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertEquals(1, violations.stream()
                 .filter(v -> v.getPropertyPath().toString().equals("login"))
@@ -152,13 +94,14 @@ public class UserControllerTest {
     }
 
     @Test
-    public void errorCreateUserWithBlankLogin() {
+    void errorCreateBlankLogin() {
         User user = User.builder()
-                .email("test@fail.ru")
+                .email("test@example.com")
                 .login(" ")
-                .name("Вася")
-                .birthday(LocalDate.of(2000, 1, 1))
+                .name("Test User")
+                .birthday(LocalDate.of(1990, 1, 1))
                 .build();
+
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertEquals(2, violations.stream()
                 .filter(v -> v.getPropertyPath().toString().equals("login"))
@@ -166,13 +109,29 @@ public class UserControllerTest {
     }
 
     @Test
-    public void errorCreateUserWithSpaceInLogin() {
+    void errorCreateEmptyLogin() {
         User user = User.builder()
-                .email("test@fail.ru")
-                .login("Test login")
-                .name("Вася")
-                .birthday(LocalDate.of(2000, 1, 1))
+                .email("test@example.com")
+                .login("")
+                .name("Test User")
+                .birthday(LocalDate.of(1990, 1, 1))
                 .build();
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertEquals(2, violations.stream()
+                .filter(v -> v.getPropertyPath().toString().equals("login"))
+                .count());
+    }
+
+    @Test
+    void errorSpaceInLogin() {
+        User user = User.builder()
+                .email("test@example.com")
+                .login("test User")
+                .name("Test User")
+                .birthday(LocalDate.of(1990, 1, 1))
+                .build();
+
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertEquals(1, violations.stream()
                 .filter(v -> v.getPropertyPath().toString().equals("login"))
@@ -180,13 +139,29 @@ public class UserControllerTest {
     }
 
     @Test
-    public void errorCreateUserWithInvalidBirthday() {
+    void errorCreateInvalidBirthday() {
         User user = User.builder()
-                .email("test@fail.ru")
-                .login("testLogin")
-                .name("Вася")
+                .email("test@example.com")
+                .login("testUser")
+                .name("Test User")
                 .birthday(LocalDate.now().plusYears(1))
                 .build();
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertEquals(1, violations.stream()
+                .filter(v -> v.getPropertyPath().toString().equals("birthday"))
+                .count());
+    }
+
+    @Test
+    void errorCreateInvalidNullBirthday() {
+        User user = User.builder()
+                .email("test@example.com")
+                .login("testUser")
+                .name("Test User")
+                .birthday(null)
+                .build();
+
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertEquals(1, violations.stream()
                 .filter(v -> v.getPropertyPath().toString().equals("birthday"))

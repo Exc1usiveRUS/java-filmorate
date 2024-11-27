@@ -4,192 +4,206 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.*;
+
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.time.LocalDate;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class FilmControllerTest {
-    private ValidatorFactory validatorFactory;
-    private Validator validator;
-
-    FilmController filmController;
+class FilmControllerTest {
+    private static ValidatorFactory validatorFactory;
+    private static Validator validator;
 
     @BeforeEach
-    public void beforeEach() {
+    void beforeEach() {
         validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
-        filmController = new FilmController(new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage()));
     }
 
     @AfterEach
-    public void afterEach() {
+    void afterEach() {
         validatorFactory.close();
     }
 
     @Test
-    public void testCreateFilm() {
-        filmController.addFilm(
-                Film.builder()
-                        .name("Test film")
-                        .description("Test description")
-                        .releaseDate(LocalDate.of(2000, 1, 1))
-                        .duration(100)
-                        .build()
-        );
-        assertEquals(1, filmController.getFilms().size());
-    }
-
-    @Test
-    public void testUpdateFilm() {
+    void createFilm() {
         Film film = Film.builder()
-                .name("Test film")
+                .name("Test Film")
                 .description("Test description")
-                .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(100)
-                .build();
-        filmController.addFilm(film);
-        assertEquals(1, filmController.getFilms().size());
-        filmController.updateFilm(Film.builder()
-                .id(1)
-                .name("Updated film")
-                .build());
-        assertEquals(1, filmController.getFilms().size());
-        assertEquals("Updated film", filmController.getFilms().stream().toList().getFirst().getName());
-    }
-
-    @Test
-    public void errorCreateFilmWithEmptyName() {
-        Film film = Film.builder()
-                .name("")
-                .description("Test description")
-                .releaseDate(LocalDate.of(2000, 1, 1))
+                .releaseDate(LocalDate.of(2022, 1, 1))
                 .duration(100)
                 .build();
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertEquals(1, violations.stream()
-                .filter(v -> v.getPropertyPath().toString().equals("name"))
-                .count());
+        assertEquals(0, violations.size());
     }
 
     @Test
-    public void errorCreateFilmWithNullName() {
+    void errorCreateEmptyFilm() {
+        Film film = Film.builder().build();
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
+    }
+
+    @Test
+    void errorCreateNullNameFilm() {
         Film film = Film.builder()
                 .name(null)
                 .description("Test description")
-                .releaseDate(LocalDate.of(2000, 1, 1))
+                .releaseDate(LocalDate.of(2022, 1, 1))
                 .duration(100)
                 .build();
+
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
         assertEquals(1, violations.stream()
                 .filter(v -> v.getPropertyPath().toString().equals("name"))
                 .count());
     }
 
     @Test
-    public void errorCreateFilmWithNegativeDuration() {
+    void errorCreateBlankNameFilm() {
         Film film = Film.builder()
-                .name("Test film")
+                .name(" ")
                 .description("Test description")
-                .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(-100)
-                .build();
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertEquals(1, violations.stream()
-                .filter(v -> v.getPropertyPath().toString().equals("duration"))
-                .count());
-    }
-
-    @Test
-    public void errorCreateFilmWithZeroDuration() {
-        Film film = Film.builder()
-                .name("Test film")
-                .description("Test description")
-                .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(0)
-                .build();
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertEquals(1, violations.stream()
-                .filter(v -> v.getPropertyPath().toString().equals("duration"))
-                .count());
-    }
-
-    @Test
-    public void errorCreateFilmWithNullDuration() {
-        Film film = Film.builder()
-                .name("Test film")
-                .description("Test description")
-                .releaseDate(LocalDate.of(2000, 1, 1))
-                .build();
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertEquals(1, violations.stream()
-                .filter(v -> v.getPropertyPath().toString().equals("duration"))
-                .count());
-    }
-
-    @Test
-    public void errorCreateFilmWithEmptyDescription() {
-        Film film = Film.builder()
-                .name("Test film")
-                .description("")
-                .releaseDate(LocalDate.of(2000, 1, 1))
+                .releaseDate(LocalDate.of(2022, 1, 1))
                 .duration(100)
                 .build();
+
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
         assertEquals(1, violations.stream()
-                .filter(v -> v.getPropertyPath().toString().equals("description"))
+                .filter(v -> v.getPropertyPath().toString().equals("name"))
                 .count());
     }
 
     @Test
-    public void errorCreateFilmWithNullDescription() {
+    void errorCreateEmptyNameFilm() {
         Film film = Film.builder()
-                .name("Test film")
+                .name("")
+                .description("Test description")
+                .releaseDate(LocalDate.of(2022, 1, 1))
+                .duration(100)
+                .build();
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
+        assertEquals(1, violations.stream()
+                .filter(v -> v.getPropertyPath().toString().equals("name"))
+                .count());
+    }
+
+    @Test
+    void errorCreateNullDescriptionFilm() {
+        Film film = Film.builder()
+                .name("Test Film")
                 .description(null)
-                .releaseDate(LocalDate.of(2000, 1, 1))
+                .releaseDate(LocalDate.of(2022, 1, 1))
                 .duration(100)
                 .build();
+
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
         assertEquals(1, violations.stream()
                 .filter(v -> v.getPropertyPath().toString().equals("description"))
                 .count());
     }
 
     @Test
-    public void errorCreateFilmWithTooLongDescription() {
+    void errorCreateBlankDescriptionFilm() {
         Film film = Film.builder()
-                .name("Test film")
-                .description("Test description".repeat(300))
-                .releaseDate(LocalDate.of(2000, 1, 1))
+                .name("Test Film")
+                .description(" ")
+                .releaseDate(LocalDate.of(2022, 1, 1))
                 .duration(100)
                 .build();
+
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
         assertEquals(1, violations.stream()
                 .filter(v -> v.getPropertyPath().toString().equals("description"))
                 .count());
     }
 
     @Test
-    public void errorCreateFilmWithWrongReleaseDate() {
+    void errorCreateEmptyDescriptionFilm() {
         Film film = Film.builder()
-                .name("Test film")
+                .name("Test Film")
+                .description("")
+                .releaseDate(LocalDate.of(2022, 1, 1))
+                .duration(100)
+                .build();
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
+        assertEquals(1, violations.stream()
+                .filter(v -> v.getPropertyPath().toString().equals("description"))
+                .count());
+    }
+
+    @Test
+    void errorCreateDescriptionTooLongFilm() {
+        Film film = Film.builder()
+                .name("Test Film")
+                .description("O".repeat(300))
+                .releaseDate(LocalDate.of(2022, 1, 1))
+                .duration(100)
+                .build();
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
+        assertEquals(1, violations.stream()
+                .filter(v -> v.getPropertyPath().toString().equals("description"))
+                .count());
+    }
+
+    @Test
+    void errorCreateNullReleaseDateFilm() {
+        Film film = Film.builder()
+                .name("Test Film")
                 .description("Test description")
-                .releaseDate(LocalDate.of(1800, 1, 1))
+                .releaseDate(null)
                 .duration(100)
                 .build();
+
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
         assertEquals(1, violations.stream()
                 .filter(v -> v.getPropertyPath().toString().equals("releaseDate"))
+                .count());
+    }
+
+    @Test
+    void errorCreateReleaseDateBeforeFilmsDateFilm() {
+        Film film = Film.builder()
+                .name("Test Film")
+                .description("Test description")
+                .releaseDate(LocalDate.of(1895, 12, 27))
+                .duration(100)
+                .build();
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
+        assertEquals(1, violations.stream()
+                .filter(v -> v.getPropertyPath().toString().equals("releaseDate"))
+                .count());
+    }
+
+    @Test
+    void errorCreateNegativeDurationFilm() {
+        Film film = Film.builder()
+                .name("Test Film")
+                .description("Test description")
+                .releaseDate(LocalDate.of(2022, 1, 1))
+                .duration(-100)
+                .build();
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
+        assertEquals(1, violations.stream()
+                .filter(v -> v.getPropertyPath().toString().equals("duration"))
                 .count());
     }
 }
