@@ -29,12 +29,8 @@ public class UserService {
     }
 
     public void deleteFriend(int userId, int friendId) {
-        User user = getUserById(userId);
+        getUserById(userId);
         getUserById(friendId);
-
-        if (user.getFriends().remove(friendId)) {
-            log.info("Пользователь с id {} удален из друзей", friendId);
-        }
         friendshipRepository.deleteFriend(userId, friendId);
     }
 

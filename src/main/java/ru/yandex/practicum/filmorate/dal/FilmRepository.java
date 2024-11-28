@@ -37,9 +37,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         Collection<Film> films = findMany(QUERY_FOR_ALL_FILMS);
         Map<Integer, Set<Genre>> genres = getAllGenres();
         for (Film film : films) {
-            if (genres.containsKey(film.getId())) {
-                film.setGenres(genres.get(film.getId()));
-            }
+            film.setGenres(genres.getOrDefault(film.getId(), Collections.emptySet()));
         }
         return films;
     }
@@ -95,28 +93,28 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         delete(DELETE_QUERY, filmId);
     }
 
-        private Map<Integer, Set<Genre>> getAllGenres() {
-            Map<Integer, Set<Genre>> genres = new HashMap<>();
-            return jdbc.query(QUERY_ALL_GENRES_FILMS, (ResultSet rs) -> {
-                while (rs.next()) {
-                    Integer filmId = rs.getInt("FILM_ID");
-                    Integer genreId = rs.getInt("GENRE_ID");
-                    String genreName = rs.getString("GENRE_NAME");
-                    genres.computeIfAbsent(filmId, k -> new HashSet<>()).add(new Genre(genreId, genreName));
-                }
-                return genres;
-            });
-        }
-
-        private Set<Genre> getGenresByFilm(Integer filmId) {
-            return jdbc.query(QUERY_GENRES_BY_FILM, (ResultSet rs) -> {
-                Set<Genre> genres = new HashSet<>();
-                while (rs.next()) {
-                    Integer genreId = rs.getInt("GENRE_ID");
-                    String genreName = rs.getString("GENRE_NAME");
-                    genres.add(new Genre(genreId, genreName));
-                }
-                return genres;
-            }, filmId);
-        }
+    private Map<Integer, Set<Genre>> getAllGenres() {
+        Map<Integer, Set<Genre>> genres = new HashMap<>();
+        return jdbc.query(QUERY_ALL_GENRES_FILMS, (ResultSet rs) -> {
+            while (rs.next()) {
+                Integer filmId = rs.getInt("FILM_ID");
+                Integer genreId = rs.getInt("GENRE_ID");
+                String genreName = rs.getString("GENRE_NAME");
+                genres.computeIfAbsent(filmId, k -> new HashSet<>()).add(new Genre(genreId, genreName));
+            }
+            return genres;
+        });
     }
+
+    private Set<Genre> getGenresByFilm(Integer filmId) {
+        return jdbc.query(QUERY_GENRES_BY_FILM, (ResultSet rs) -> {
+            Set<Genre> genres = new HashSet<>();
+            while (rs.next()) {
+                Integer genreId = rs.getInt("GENRE_ID");
+                String genreName = rs.getString("GENRE_NAME");
+                genres.add(new Genre(genreId, genreName));
+            }
+            return genres;
+        }, filmId);
+    }
+}
