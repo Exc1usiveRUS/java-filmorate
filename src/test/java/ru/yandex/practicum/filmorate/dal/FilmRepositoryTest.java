@@ -105,7 +105,6 @@ class FilmRepositoryTest {
                 .duration(100)
                 .mpa(new Mpa(1, "G"))
                 .genres(Set.of(new Genre(1, "Комедия")))
-                .likes(Set.of(1, 2))
                 .build();
 
         Film updated = filmRepository.updateFilm(updatedFilm);
