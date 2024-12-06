@@ -29,6 +29,10 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     private static final String QUERY_GENRES_BY_FILM = "SELECT * FROM GENRES g, FILMS_GENRES fg " +
             "WHERE g.GENRE_ID = fg.GENRE_ID AND fg.FILM_ID = ?";
 
+    private static final String QUERY_SEARCH_FILMS_BY_TITLES = "SELECT * FROM FILMS f LEFT JOIN MPA_RATINGS m " +
+            "ON f.MPA_ID = m.MPA_ID LEFT JOIN (SELECT FILM_ID, COUNT(FILM_ID) AS LIKES FROM FILMS_LIKES " +
+            "GROUP BY FILM_ID) fl ON f.FILM_ID = fl.FILM_ID WHERE LOWER(f.FILM_NAME) LIKE ? ORDER BY LIKES DESC";
+
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
     }
@@ -91,6 +95,16 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
 
     public void deleteFilm(Integer filmId) {
         delete(DELETE_QUERY, filmId);
+    }
+
+    public Collection<Film> searchFilmsByTitle(String substring) {
+        String title = "%" + substring.trim().toLowerCase() + "%";
+        Collection<Film> films = findMany(QUERY_SEARCH_FILMS_BY_TITLES, title);
+        Map<Integer, Set<Genre>> genres = getAllGenres();
+        for (Film film : films) {
+            film.setGenres(genres.getOrDefault(film.getId(), Collections.emptySet()));
+        }
+        return films;
     }
 
     private Map<Integer, Set<Genre>> getAllGenres() {
