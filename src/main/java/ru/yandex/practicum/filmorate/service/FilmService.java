@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -81,5 +82,23 @@ public class FilmService {
 
     public void deleteFilm(Integer id) {
         filmStorage.deleteFilm(id);
+    }
+
+    public Collection<Film> filmSearch(String substring, List<String> paramsList) {
+        Collection<Film> filmsList;
+
+        if (paramsList.size() == 2) {
+            throw new NotFoundException("Поиск и по режисерам и по тайтлам в разработке");
+        } else {
+            if (paramsList.contains("title")) {
+                filmsList = filmStorage.searchFilmsByTitle(substring);
+            } else if (paramsList.contains("director")) {
+                throw new NotFoundException("Поиск по режисерам в разаботке");
+            } else {
+                throw new NotFoundException("Поле " + paramsList.getFirst() + "не найдено");
+            }
+        }
+
+        return filmsList;
     }
 }
