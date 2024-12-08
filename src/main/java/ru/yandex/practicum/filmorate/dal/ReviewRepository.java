@@ -8,7 +8,7 @@ import ru.yandex.practicum.filmorate.model.Review;
 import java.util.Collection;
 
 @Repository
-public class ReviewRepository extends BaseRepository<Review>{
+public class ReviewRepository extends BaseRepository<Review> {
 
     private static final String SELECT_ALL_REVIEWS = "SELECT * FROM REVIEWS";
     private static final String SELECT_BY_ID = "SELECT * FROM REVIEWS WHERE REVIEW_ID = ?";
