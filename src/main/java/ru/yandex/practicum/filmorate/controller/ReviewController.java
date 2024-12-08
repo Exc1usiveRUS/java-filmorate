@@ -63,12 +63,12 @@ public class ReviewController {
     @DeleteMapping("/{id}/like/{userId}")
     @ResponseStatus(HttpStatus.OK)
     public Review deleteLike(@PathVariable Integer id, @PathVariable Integer userId) {
-        return reviewService.dislike(id, userId);
+        return reviewService.deleteLike(id, userId, true);
     }
 
     @DeleteMapping("/{id}/dislike/{userId}")
     @ResponseStatus(HttpStatus.OK)
     public Review deleteDislike(@PathVariable Integer id, @PathVariable Integer userId) {
-        return reviewService.addLike(id, userId);
+        return reviewService.deleteLike(id, userId, false);
     }
 }
