@@ -34,13 +34,12 @@ public class EventRowMapper implements RowMapper<Event> {
             case "REMOVE":
                 event.setOperation(OperationType.REMOVE);
                 break;
-            case "REVIEW":
+            case "UPDATE":
                 event.setOperation(OperationType.UPDATE);
                 break;
         }
         event.setEventId(rs.getInt("EVENT_ID"));
         event.setEntityId(rs.getInt("ENTITY_ID"));
-
         return event;
     }
 }
