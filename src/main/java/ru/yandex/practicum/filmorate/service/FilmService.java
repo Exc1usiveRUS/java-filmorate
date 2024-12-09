@@ -4,13 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.EventRepository;
 import ru.yandex.practicum.filmorate.dal.GenreRepository;
 import ru.yandex.practicum.filmorate.dal.LikesRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
+import java.time.Instant;
 import java.util.Collection;
 
 @Slf4j
@@ -20,24 +21,31 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final GenreRepository genreRepository;
     private final LikesRepository likesRepository;
+    private final EventRepository eventRepository;
 
     public FilmService(@Autowired @Qualifier("filmRepository") FilmStorage filmStorage,
                        @Autowired GenreRepository genreRepository,
-                       @Autowired LikesRepository likesRepository) {
+                       @Autowired LikesRepository likesRepository,
+                       @Autowired EventRepository eventRepository) {
         this.filmStorage = filmStorage;
         this.genreRepository = genreRepository;
         this.likesRepository = likesRepository;
+        this.eventRepository = eventRepository;
     }
 
     public void addLike(int filmId, int userId) {
         filmStorage.getFilmById(filmId);
         likesRepository.addLike(filmId, userId);
+        //записываем добавление лайка в БД событий
+        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), userId, EventType.LIKE, OperationType.ADD, 0, filmId));
         log.info("User {} liked film {}", userId, filmId);
     }
 
     public void deleteLike(int filmId, int userId) {
         filmStorage.getFilmById(filmId);
         likesRepository.deleteLike(filmId, userId);
+        //записываем удаление лайка в БД событий
+        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), userId, EventType.LIKE, OperationType.REMOVE, 0, filmId));
         log.info("Пользователь {} отменил лайк фильма {}", userId, filmId);
     }
 

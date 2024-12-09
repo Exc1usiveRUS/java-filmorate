@@ -2,13 +2,10 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dal.FilmRepository;
-import ru.yandex.practicum.filmorate.dal.ReviewRepository;
-import ru.yandex.practicum.filmorate.dal.ReviewsLikesRepository;
-import ru.yandex.practicum.filmorate.dal.UserRepository;
-import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.model.ReviewLike;
+import ru.yandex.practicum.filmorate.dal.*;
+import ru.yandex.practicum.filmorate.model.*;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -25,6 +22,8 @@ public class ReviewService {
     FilmRepository filmRepository;
     @Autowired
     ReviewsLikesRepository likesRepository;
+    @Autowired
+    EventRepository eventRepository;
 
     public Review getReviewById(Integer reviewId) {
         return reviewRepository.getReviewById(reviewId);
@@ -53,16 +52,23 @@ public class ReviewService {
     public Review addReview(Review review) {
         userRepository.getUserById(review.getUserId());
         filmRepository.getFilmById(review.getFilmId());
-        return reviewRepository.addReview(review);
+        Review reviewWithId = reviewRepository.addReview(review);
+        //запись события
+        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), review.getUserId(), EventType.REVIEW, OperationType.ADD, 0, reviewWithId.getReviewId()));
+        return reviewWithId;
     }
 
     public Review updateReview(Review review) {
         userRepository.getUserById(review.getUserId());
         filmRepository.getFilmById(review.getFilmId());
+        //запись события
+        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), review.getUserId(), EventType.REVIEW, OperationType.UPDATE, 0, review.getReviewId()));
         return reviewRepository.updateReview(review);
     }
 
     public void deleteReview(Integer reviewId) {
+        //запись события, перед delete, так как нужно вернуть еще не удаленный review по id, чтобы взять userId
+        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), getReviewById(reviewId).getUserId(), EventType.REVIEW, OperationType.REMOVE, 0, reviewId));
         reviewRepository.deleteReview(reviewId);
     }
 
