@@ -34,7 +34,7 @@ public class ReviewService {
         List<Review> reviews = reviewRepository.getAll().stream()
                 .sorted(Comparator.comparingInt(Review::getUseful))
                 .toList().reversed();
-        if (filmId != 0) {
+        if (filmId != null) {
             reviews = reviews.stream()
                     .filter(review -> review.getFilmId() == filmId)
                     .toList();
