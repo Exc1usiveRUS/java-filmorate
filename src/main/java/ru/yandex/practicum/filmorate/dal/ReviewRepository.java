@@ -3,12 +3,8 @@ package ru.yandex.practicum.filmorate.dal;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.model.Event;
-import ru.yandex.practicum.filmorate.model.EventType;
-import ru.yandex.practicum.filmorate.model.OperationType;
 import ru.yandex.practicum.filmorate.model.Review;
 
-import java.time.Instant;
 import java.util.Collection;
 
 @Repository
@@ -23,11 +19,9 @@ public class ReviewRepository extends BaseRepository<Review> {
     private static final String DELETE_REVIEW = "DELETE FROM REVIEWS WHERE REVIEW_ID = ?";
     private static final String UPDATE_USEFUL = "UPDATE REVIEWS SET USEFUL = ? WHERE REVIEW_ID = ?";
 
-    private final EventRepository eventRepository;
 
-    public ReviewRepository(JdbcTemplate jdbc, RowMapper<Review> mapper, EventRepository eventRepository) {
+    public ReviewRepository(JdbcTemplate jdbc, RowMapper<Review> mapper) {
         super(jdbc, mapper);
-        this.eventRepository = eventRepository;
     }
 
     public Collection<Review> getAll() {
@@ -46,8 +40,6 @@ public class ReviewRepository extends BaseRepository<Review> {
                 review.getFilmId(),
                 0));
         review.setUseful(0);
-        //запись события
-        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), review.getUserId(), EventType.REVIEW, OperationType.ADD, 0, review.getReviewId()));
         return review;
     }
 
@@ -60,14 +52,10 @@ public class ReviewRepository extends BaseRepository<Review> {
                 review.getReviewId());
         if (review.getUseful() == null)
             review.setUseful(0);
-        //запись события
-        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), review.getUserId(), EventType.REVIEW, OperationType.UPDATE, 0, review.getReviewId()));
         return review;
     }
 
     public void deleteReview(Integer reviewId) {
-        //запись события, перед delete, так как нужно вернуть еще не удаленный review по id, чтобы взять userId
-        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), getReviewById(reviewId).getUserId(), EventType.REVIEW, OperationType.REMOVE, 0, reviewId));
         delete(DELETE_REVIEW, reviewId);
     }
 

@@ -1,15 +1,10 @@
 package ru.yandex.practicum.filmorate.dal;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.model.Event;
-import ru.yandex.practicum.filmorate.model.EventType;
-import ru.yandex.practicum.filmorate.model.OperationType;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.Instant;
 import java.util.Collection;
 
 @Repository
@@ -22,24 +17,16 @@ public class FriendshipRepository extends BaseRepository<User> {
             "(SELECT FRIEND_ID FROM FRIENDS WHERE USER_ID = ?) AND USER_ID IN " +
             "(SELECT FRIEND_ID FROM FRIENDS WHERE USER_ID = ?)";
 
-    @Autowired
-    EventRepository eventRepository;
-
-    public FriendshipRepository(JdbcTemplate jdbc, RowMapper<User> mapper, EventRepository eventRepository) {
+    public FriendshipRepository(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
-        this.eventRepository = eventRepository;
     }
 
     public void addFriend(Integer userId, Integer friendId) {
         update(INSERT_QUERY, userId, friendId);
-        //записываем добавления друга в БД событий
-        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), userId, EventType.FRIEND, OperationType.ADD, 0, friendId));
     }
 
     public void deleteFriend(Integer userId, Integer friendId) {
         update(DELETE_QUERY, friendId, userId);
-        //записываем удаление друга в БД событий
-        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), userId, EventType.FRIEND, OperationType.REMOVE, 0, friendId));
     }
 
     public Collection<User> getCommonFriends(Integer userId, Integer friendId) {
