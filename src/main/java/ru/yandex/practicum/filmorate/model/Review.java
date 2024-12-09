@@ -12,17 +12,9 @@ public class Review {
     private String content;
     @NotNull(message = "Отзыв должен быть позитивным или негативным")
     private Boolean isPositive;
-    @NotNull(message = "Фильм не может быть null")
+    @NotNull(message = "Пользователь не может быть null")
     private Integer userId;
     @NotNull(message = "Фильм не может быть null")
     private Integer filmId;
     private Integer useful;
-
-    public boolean getIsPositive() {
-        return isPositive;
-    }
-
-    public void setIsPositive(boolean isPositive) {
-        this.isPositive = isPositive;
-    }
 }
