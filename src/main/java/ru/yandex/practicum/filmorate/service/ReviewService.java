@@ -54,7 +54,8 @@ public class ReviewService {
         filmRepository.getFilmById(review.getFilmId());
         Review reviewWithId = reviewRepository.addReview(review);
         //запись события
-        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), review.getUserId(), EventType.REVIEW, OperationType.ADD, 0, reviewWithId.getReviewId()));
+        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), review.getUserId(), EventType.REVIEW,
+                OperationType.ADD, 0, reviewWithId.getReviewId()));
         return reviewWithId;
     }
 
@@ -62,14 +63,17 @@ public class ReviewService {
         userRepository.getUserById(review.getUserId());
         filmRepository.getFilmById(review.getFilmId());
         //запись события
-        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), review.getUserId(), EventType.REVIEW, OperationType.UPDATE, 0, review.getReviewId()));
+        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), review.getUserId(), EventType.REVIEW,
+                OperationType.UPDATE, 0, review.getReviewId()));
         return reviewRepository.updateReview(review);
     }
 
     public void deleteReview(Integer reviewId) {
-        //запись события, перед delete, так как нужно вернуть еще не удаленный review по id, чтобы взять userId
-        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), getReviewById(reviewId).getUserId(), EventType.REVIEW, OperationType.REMOVE, 0, reviewId));
+        // сохраняем удаляемый Review, чтобы после иметь возможность взять из него нужные данные для записи события
+        Review review = getReviewById(reviewId);
         reviewRepository.deleteReview(reviewId);
+        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), review.getUserId(), EventType.REVIEW,
+                OperationType.REMOVE, 0, reviewId));
     }
 
     public Review addLike(Integer reviewId, Integer userId) {
