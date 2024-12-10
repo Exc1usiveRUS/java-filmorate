@@ -37,8 +37,8 @@ public class UserService {
         // создаем множество для хранения id-шников фильмов для рекомендаций
         Set<Integer> filmIdsForRecommendation = new HashSet<>();
         // получаем множество id-шников фильмов, лайкнутых пользователем
-        Set<Integer> filmsLikedByUser = new HashSet<>(likesRepository.getLikesByUser(userId).
-                stream().map(Like::getFilmId).toList());
+        Set<Integer> filmsLikedByUser = new HashSet<>(likesRepository.getLikesByUser(userId)
+                        .stream().map(Like::getFilmId).toList());
         // создаем мапу, куда будем записывать id пользователей и количство лайков, совпадающих с нужным пользователем
         HashMap<Integer, Integer> usersLikes = new HashMap<>();
         // перебор всех пользователей
@@ -47,8 +47,8 @@ public class UserService {
             if (user.getId() != userId) {
                 int matches = 0;
                 // получаем множество id-шников фильмов, лайкнутых другим пользователем
-                Set<Integer> filmsLikedByOtherUser = new HashSet<>(likesRepository.getLikesByUser(user.getId()).
-                        stream().map(Like::getFilmId).toList());
+                Set<Integer> filmsLikedByOtherUser = new HashSet<>(likesRepository.getLikesByUser(user.getId())
+                        .stream().map(Like::getFilmId).toList());
                 // перебираем id-шники лайкнутых фильмов пользователя и при совпадени с другим пользователем
                 // увеличиваем счетчик matches на 1
                 for (int i : filmsLikedByUser) {
@@ -75,8 +75,8 @@ public class UserService {
                 if (usersLikes.get(user) == maxLikesMatches) {
                     // добавляем в множество все id-шники фильмов, лайкнутых другими пользователями, с которыми
                     // найдено максимальное количество совпадений
-                    filmIdsForRecommendation.addAll(likesRepository.getLikesByUser(user).
-                            stream().map(Like::getFilmId).toList());
+                    filmIdsForRecommendation.addAll(likesRepository.getLikesByUser(user)
+                            .stream().map(Like::getFilmId).toList());
                 }
             }
             // удаляем из рекомендаций все id-шники фильмов, лайкнутых самим пользователем
