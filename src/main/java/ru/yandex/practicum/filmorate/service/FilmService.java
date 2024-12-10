@@ -45,8 +45,8 @@ public class FilmService {
         return filmStorage.getFilmById(id);
     }
 
-    public Collection<Film> getTopFilms(Integer count) {
-        return filmStorage.getTopFilms(count);
+    public Collection<Film> getTopFilms(Integer count, Integer genreId, Integer year) {
+        return filmStorage.getTopFilms(count, genreId, year);
     }
 
     public Collection<Film> getFilms() {
