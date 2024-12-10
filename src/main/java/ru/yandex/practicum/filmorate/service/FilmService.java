@@ -82,4 +82,8 @@ public class FilmService {
     public void deleteFilm(Integer id) {
         filmStorage.deleteFilm(id);
     }
+
+    public Collection<Film> getCommonFilms(Integer userId, Integer friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
 }

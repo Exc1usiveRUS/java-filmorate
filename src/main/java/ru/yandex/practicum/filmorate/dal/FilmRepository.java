@@ -28,6 +28,8 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             "GENRES g WHERE fg.GENRE_ID = g.GENRE_ID";
     private static final String QUERY_GENRES_BY_FILM = "SELECT * FROM GENRES g, FILMS_GENRES fg " +
             "WHERE g.GENRE_ID = fg.GENRE_ID AND fg.FILM_ID = ?";
+    private static final String QUERY_COMMON_FILMS = "SELECT * FROM films f, MPA_RATINGS m WHERE f.MPA_ID = m.MPA_ID AND f.FILM_ID IN (SELECT m.FILM_ID from " +
+            "(SELECT fl.FILM_ID, COUNT(fl.FILM_ID) AS LIKES FROM FILMS_LIKES fl WHERE fl.user_id IN (?, ?) GROUP BY fl.FILM_ID ORDER BY LIKES DESC) AS m WHERE m.LIKES > 1)  ";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -35,6 +37,15 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
 
     public Collection<Film> getFilms() {
         Collection<Film> films = findMany(QUERY_FOR_ALL_FILMS);
+        Map<Integer, Set<Genre>> genres = getAllGenres();
+        for (Film film : films) {
+            film.setGenres(genres.getOrDefault(film.getId(), Collections.emptySet()));
+        }
+        return films;
+    }
+
+    public Collection<Film> getCommonFilms(Integer userId, Integer friendId) {
+        Collection<Film> films = findMany(QUERY_COMMON_FILMS, userId, friendId);
         Map<Integer, Set<Genre>> genres = getAllGenres();
         for (Film film : films) {
             film.setGenres(genres.getOrDefault(film.getId(), Collections.emptySet()));
