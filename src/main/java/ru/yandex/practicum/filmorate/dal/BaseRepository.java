@@ -32,6 +32,11 @@ public class BaseRepository<T> {
         return rowDelete > 0;
     }
 
+    protected boolean deleteAll(String query) {
+        int rowDelete = jdbc.update(query);
+        return rowDelete > 0;
+    }
+
     protected boolean update(String query, Object... params) {
         int rowUpdate = jdbc.update(query, params);
         return rowUpdate > 0;
