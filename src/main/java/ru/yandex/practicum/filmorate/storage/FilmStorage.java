@@ -18,5 +18,5 @@ public interface FilmStorage {
 
     Collection<Film> getTopFilms(Integer count);
 
-    Collection<Film> searchFilmsByTitle(String title);
+    Collection<Film> filmsSearch(String title, String field);
 }

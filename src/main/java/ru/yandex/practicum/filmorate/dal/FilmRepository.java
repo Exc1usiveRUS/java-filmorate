@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dal;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -29,9 +30,34 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     private static final String QUERY_GENRES_BY_FILM = "SELECT * FROM GENRES g, FILMS_GENRES fg " +
             "WHERE g.GENRE_ID = fg.GENRE_ID AND fg.FILM_ID = ?";
 
-    private static final String QUERY_SEARCH_FILMS_BY_TITLES = "SELECT * FROM FILMS f LEFT JOIN MPA_RATINGS m " +
+    private static final String QUERY_SEARCH_FILMS_BY_TITLE = "SELECT * FROM FILMS f LEFT JOIN MPA_RATINGS m " +
             "ON f.MPA_ID = m.MPA_ID LEFT JOIN (SELECT FILM_ID, COUNT(FILM_ID) AS LIKES FROM FILMS_LIKES " +
             "GROUP BY FILM_ID) fl ON f.FILM_ID = fl.FILM_ID WHERE LOWER(f.FILM_NAME) LIKE ? ORDER BY LIKES DESC";
+
+    private static final String QUERY_SEARCH_FILMS_BY_DIRECTOR = "SELECT * FROM FILMS f LEFT JOIN MPA_RATINGS m " +
+            "ON f.MPA_ID = m.MPA_ID LEFT JOIN (SELECT FILM_ID, COUNT(FILM_ID) AS LIKES FROM FILMS_LIKES " +
+            "GROUP BY FILM_ID) fl ON f.FILM_ID = fl.FILM_ID WHERE LOWER(f." +
+            "" +
+            "" +
+            "" +
+            "FILM_DIRECTOR" +
+            "" +
+            "" +
+            "" +
+            ") LIKE ? ORDER BY LIKES DESC";
+
+    private static final String QUERY_SEARCH_FILMS_BY_TITLE_AND_DIRECTOR = "SELECT * FROM FILMS f" +
+            " LEFT JOIN MPA_RATINGS m ON f.MPA_ID = m.MPA_ID LEFT JOIN (SELECT FILM_ID, COUNT(FILM_ID) AS LIKES" +
+            " FROM FILMS_LIKES GROUP BY FILM_ID) fl ON f.FILM_ID = fl.FILM_ID WHERE LOWER(f.FILM_NAME) LIKE ? OR " +
+            "LOWER(f." +
+            "" +
+            "" +
+            "" +
+            "FILM_DIRECTOR" +
+            "" +
+            "" +
+            "" +
+            ") LIKE ? ORDER BY LIKES DESC";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -97,9 +123,19 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         delete(DELETE_QUERY, filmId);
     }
 
-    public Collection<Film> searchFilmsByTitle(String substring) {
-        String title = "%" + substring.trim().toLowerCase() + "%";
-        Collection<Film> films = findMany(QUERY_SEARCH_FILMS_BY_TITLES, title);
+    public Collection<Film> filmsSearch(String substring, String column) {
+        Collection<Film> films;
+
+        if(column.equals("title")) {
+            films = findMany(QUERY_SEARCH_FILMS_BY_TITLE, "%" + substring.trim().toLowerCase() + "%");
+        } else if (column.equals("director")){
+            films = findMany(QUERY_SEARCH_FILMS_BY_TITLE, "%" + substring.trim().toLowerCase() + "%");
+        } else if (column.equals("title,director")) {
+            films = findMany(QUERY_SEARCH_FILMS_BY_TITLE_AND_DIRECTOR, substring);
+        } else {
+            throw new NotFoundException("Столбец " + column + "не найден");
+        }
+
         Map<Integer, Set<Genre>> genres = getAllGenres();
         for (Film film : films) {
             film.setGenres(genres.getOrDefault(film.getId(), Collections.emptySet()));

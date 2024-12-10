@@ -90,13 +90,7 @@ public class FilmService {
         if (paramsList.size() == 2) {
             throw new NotFoundException("Поиск и по режисерам и по тайтлам в разработке");
         } else {
-            if (paramsList.contains("title")) {
-                filmsList = filmStorage.searchFilmsByTitle(substring);
-            } else if (paramsList.contains("director")) {
-                throw new NotFoundException("Поиск по режисерам в разаботке");
-            } else {
-                throw new NotFoundException("Поле " + paramsList.getFirst() + "не найдено");
-            }
+            filmsList = filmStorage.filmsSearch(substring, paramsList.getFirst());
         }
 
         return filmsList;
