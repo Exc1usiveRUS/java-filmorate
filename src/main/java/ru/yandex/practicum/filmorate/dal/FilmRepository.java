@@ -55,25 +55,11 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         return film;
     }
 
-    public List<Film> getFilmsByDirectorId(Integer directorId, String sortBy) {
-        List<Film> directorFilms = findMany(FIND_BY_DIRECTOR_ID_QUERY, directorId);
-        Map<Integer, Set<Genre>> genres = getAllGenres();
-        Map<Integer, Set<Director>> directors = getAllDirectors();
-        for (Film film : directorFilms) {
-            if (genres.containsKey(film.getId())) {
-                film.setGenres(genres.get(film.getId()));
-            }
-            if (directors.containsKey(film.getId())) {
-                film.setDirectors(directors.get(film.getId()));
-            }
+    public List<Film> getFilmsByDirectorId(Integer directorId) {
+        return findMany(FIND_BY_DIRECTOR_ID_QUERY, directorId);
+        //Map<Integer, Set<Genre>> genres = getAllGenres();
+        //Map<Integer, Set<Director>> directors = getAllDirectors();
 
-            if (sortBy.equals("year")) {
-                return directorFilms.stream().sorted(Comparator.comparing(Film::getReleaseDate)).toList();
-            } else {
-                return directorFilms.stream().sorted(Comparator.comparing(Film::getCountLikes).reversed()).toList();
-            }
-        }
-        return directorFilms;
     }
 
     @Override

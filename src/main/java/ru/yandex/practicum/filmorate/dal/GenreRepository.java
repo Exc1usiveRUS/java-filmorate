@@ -16,6 +16,8 @@ public class GenreRepository extends BaseRepository<Genre> {
     private static final String INSERT_QUERY = "INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)";
     private static final String QUERY_FOR_GENRE_BY_ID = "SELECT * FROM GENRES WHERE GENRE_ID = ?";
     private static final String DELETE_ALL_FROM_FILM_QUERY = "DELETE FROM FILMS_GENRES WHERE FILM_ID = ?";
+    private static final String FIND_GENRES_BY_FILM_QUERY = "SELECT g.GENRE_ID, g.GENRE_NAME FROM GENRES AS g " +
+            "RIGHT JOIN FILMS_GENRES AS fg ON g.GENRE_ID = fg.GENRE_ID WHERE fg.FILM_ID = ?";
 
     public GenreRepository(JdbcTemplate jdbc, RowMapper<Genre> mapper) {
         super(jdbc, mapper);
@@ -27,6 +29,10 @@ public class GenreRepository extends BaseRepository<Genre> {
 
     public Genre getGenreById(Integer id) {
         return findOne(QUERY_FOR_GENRE_BY_ID, id);
+    }
+
+    public Collection<Genre> getGenresByFilm(int filmId) {
+        return findMany(FIND_GENRES_BY_FILM_QUERY, filmId);
     }
 
     public void addGenres(Integer filmId, List<Integer> genresIds) {

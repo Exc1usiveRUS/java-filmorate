@@ -15,6 +15,7 @@ import java.util.List;
 public class DirectorRepository extends BaseRepository<Director> {
     private static final String FIND_ALL_QUERY = "SELECT * FROM DIRECTORS";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM DIRECTORS WHERE DIRECTOR_ID = ?";
+    private static final String FIND_DIRECTORS_BY_FILM = "SELECT d.DIRECTOR_ID, d.DIRECTOR_NAME FROM DIRECTORS AS d LEFT JOIN FILMS_DIRECTORS fd ON d.DIRECTOR_ID = fd.DIRECTOR_ID WHERE fd.FILM_ID = ?";
     private static final String INSERT_QUERY = "INSERT INTO DIRECTORS (DIRECTOR_NAME) VALUES (?)";
     private static final String UPDATE_QUERY = "UPDATE DIRECTORS SET DIRECTOR_NAME = ? WHERE DIRECTOR_ID = ?";
     private static final String DELETE_ALL_QUERY = "DELETE FROM DIRECTORS";
@@ -30,6 +31,10 @@ public class DirectorRepository extends BaseRepository<Director> {
 
     public List<Director> findAll() {
         return findMany(FIND_ALL_QUERY);
+    }
+
+    public List<Director> findDirectorsByFilm(int filmId) {
+        return findMany(FIND_DIRECTORS_BY_FILM, filmId);
     }
 
     public Director findById(Integer id) {
