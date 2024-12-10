@@ -12,6 +12,8 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 
 @Slf4j
@@ -44,7 +46,17 @@ public class FilmService {
     }
 
     public List<Film> getFilmsByDirectorId(Integer directorId, String sortBy) {
-        return filmStorage.getFilmsByDirectorId(directorId, sortBy);
+        List<Film> directorFilms = filmStorage.getFilmsByDirectorId(directorId);
+        for (Film film : directorFilms) {
+            film.setDirectors(new HashSet<>(directorRepository.findDirectorsByFilm(film.getId())));
+            film.setGenres(new HashSet<>(genreRepository.getGenresByFilm(film.getId())));
+            film.setLikes(likesRepository.getLikesByFilm(film.getId()).size());
+        }
+        if (sortBy.equals("year")) {
+            return directorFilms.stream().sorted(Comparator.comparing(Film::getReleaseDate)).toList();
+        } else {
+            return directorFilms.stream().sorted(Comparator.comparing(Film::getLikes).reversed()).toList();
+        }
     }
 
     public Collection<Film> getTopFilms(Integer count) {
@@ -82,7 +94,7 @@ public class FilmService {
         if (film.getReleaseDate() != null) updatedFilm.setReleaseDate(film.getReleaseDate());
         if (film.getDuration() != null) updatedFilm.setDuration(film.getDuration());
         if (film.getMpa() != null) updatedFilm.setMpa(film.getMpa());
-        if (film.getLikes() != null) updatedFilm.setLikes(film.getLikes());
+        //if (film.getLikes() != null) updatedFilm.setLikes(film.getLikes());
         if (!updatedFilm.getGenres().isEmpty()) {
             genreRepository.deleteGenres(updatedFilm.getId());
             genreRepository.addGenres(updatedFilm.getId(), updatedFilm.getGenres()
