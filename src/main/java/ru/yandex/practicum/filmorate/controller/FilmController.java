@@ -30,6 +30,12 @@ public class FilmController {
         return filmService.getFilmById(id);
     }
 
+    @GetMapping("/common")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> getCommonFilms(@RequestParam Integer userId, @RequestParam Integer friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
     @GetMapping("/popular")
     @ResponseStatus(HttpStatus.OK)
     public Collection<Film> getTopFilms(@RequestParam(defaultValue = "10") int count,

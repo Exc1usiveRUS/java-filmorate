@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.EventService;
@@ -77,6 +78,12 @@ public class UserController {
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable int id) {
         userService.deleteUser(id);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/{id}/recommendations")
+    public Collection<Film> getRecommendations(@PathVariable int id) {
+        return userService.getRecommendations(id);
     }
 
     @ResponseStatus(HttpStatus.OK)
