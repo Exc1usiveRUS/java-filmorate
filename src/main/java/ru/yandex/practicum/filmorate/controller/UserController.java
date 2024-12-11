@@ -5,7 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
@@ -17,6 +19,7 @@ import java.util.Collection;
 public class UserController {
 
     private final UserService userService;
+    private final EventService eventService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -74,5 +77,11 @@ public class UserController {
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable int id) {
         userService.deleteUser(id);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/{userId}/feed")
+    public Collection<Event> getFeed(@PathVariable int userId) {
+        return eventService.getFeed(userId);
     }
 }

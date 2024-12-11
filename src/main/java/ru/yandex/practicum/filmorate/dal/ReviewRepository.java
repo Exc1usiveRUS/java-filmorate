@@ -19,6 +19,7 @@ public class ReviewRepository extends BaseRepository<Review> {
     private static final String DELETE_REVIEW = "DELETE FROM REVIEWS WHERE REVIEW_ID = ?";
     private static final String UPDATE_USEFUL = "UPDATE REVIEWS SET USEFUL = ? WHERE REVIEW_ID = ?";
 
+
     public ReviewRepository(JdbcTemplate jdbc, RowMapper<Review> mapper) {
         super(jdbc, mapper);
     }
