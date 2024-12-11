@@ -94,7 +94,6 @@ public class FilmService {
         if (film.getReleaseDate() != null) updatedFilm.setReleaseDate(film.getReleaseDate());
         if (film.getDuration() != null) updatedFilm.setDuration(film.getDuration());
         if (film.getMpa() != null) updatedFilm.setMpa(film.getMpa());
-        //if (film.getLikes() != null) updatedFilm.setLikes(film.getLikes());
         if (!updatedFilm.getGenres().isEmpty()) {
             genreRepository.deleteGenres(updatedFilm.getId());
             genreRepository.addGenres(updatedFilm.getId(), updatedFilm.getGenres()

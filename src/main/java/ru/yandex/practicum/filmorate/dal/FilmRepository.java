@@ -57,9 +57,6 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
 
     public List<Film> getFilmsByDirectorId(Integer directorId) {
         return findMany(FIND_BY_DIRECTOR_ID_QUERY, directorId);
-        //Map<Integer, Set<Genre>> genres = getAllGenres();
-        //Map<Integer, Set<Director>> directors = getAllDirectors();
-
     }
 
     @Override
