@@ -5,7 +5,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import ru.yandex.practicum.filmorate.model.Like;
-import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 
@@ -30,5 +29,9 @@ public class LikesRepository extends BaseRepository<Like> {
 
     public Collection<Like> getLikesByUser(int userId) {
         return findMany(GET_LIKES_BY_USER_QUERY, userId);
+    }
+
+    public void deleteLike(Integer filmId, Integer userId) {
+        jdbc.update(DELETE_QUERY_OF_FILM, filmId, userId);
     }
 }

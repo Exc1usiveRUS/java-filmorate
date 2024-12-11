@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.dal.LikesRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -27,7 +26,6 @@ public class FilmService {
     private final GenreRepository genreRepository;
     private final LikesRepository likesRepository;
     private final EventRepository eventRepository;
-    private final UserStorage userStorage;
     private final DirectorRepository directorRepository;
 
 
