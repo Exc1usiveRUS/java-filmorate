@@ -60,28 +60,28 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
 
     private static final String QUERY_SEARCH_FILMS_BY_DIRECTOR = "SELECT * FROM FILMS f LEFT JOIN MPA_RATINGS m " +
             "ON f.MPA_ID = m.MPA_ID LEFT JOIN (SELECT FILM_ID, COUNT(FILM_ID) AS LIKES FROM FILMS_LIKES " +
-            "GROUP BY FILM_ID) fl ON f.FILM_ID = fl.FILM_ID WHERE LOWER(f." +
-            "" +
-            "" +
-            "" +
-            "FILM_DIRECTOR" +
-            "" +
-            "" +
-            "" +
-            ") LIKE ? ORDER BY LIKES DESC";
+            "GROUP BY FILM_ID) fl ON f.FILM_ID = fl.FILM_ID LEFT JOIN FILMS_DIRECTORS fd ON f.FILM_ID = fd.FILM_ID " +
+            "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID WHERE LOWER(DIRECTOR_NAME) LIKE ? " +
+            "ORDER BY LIKES DESC";
+
+    String s = """
+            SELECT * 
+            FROM FILMS f 
+            LEFT JOIN MPA_RATINGS m ON f.MPA_ID = m.MPA_ID 
+            LEFT JOIN (SELECT FILM_ID, COUNT(FILM_ID) AS LIKES 
+                        FROM FILMS_LIKES 
+                        GROUP BY FILM_ID) fl ON f.FILM_ID = fl.FILM_ID 
+            LEFT JOIN FILMS_DIRECTORS fd ON f.FILM_ID = fd.FILM_ID
+            LEFT JOIN DIRECTORS d ON f.DIRECTOR_ID = d.DIRECTOR_ID
+            WHERE LOWER(DIRECTOR_NAME) LIKE ?
+            ORDER BY LIKES DESC
+            """;
 
     private static final String QUERY_SEARCH_FILMS_BY_TITLE_AND_DIRECTOR = "SELECT * FROM FILMS f" +
             " LEFT JOIN MPA_RATINGS m ON f.MPA_ID = m.MPA_ID LEFT JOIN (SELECT FILM_ID, COUNT(FILM_ID) AS LIKES" +
-            " FROM FILMS_LIKES GROUP BY FILM_ID) fl ON f.FILM_ID = fl.FILM_ID WHERE LOWER(f.FILM_NAME) LIKE ? OR " +
-            "LOWER(f." +
-            "" +
-            "" +
-            "" +
-            "FILM_DIRECTOR" +
-            "" +
-            "" +
-            "" +
-            ") LIKE ? ORDER BY LIKES DESC";
+            " FROM FILMS_LIKES GROUP BY FILM_ID) fl ON f.FILM_ID = fl.FILM_ID LEFT JOIN FILMS_DIRECTORS fd " +
+            "ON f.FILM_ID = fd.FILM_ID LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+            "WHERE LOWER(f.FILM_NAME) LIKE ? OR LOWER(DIRECTOR_NAME) LIKE ? ORDER BY LIKES DESC";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -175,22 +175,25 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         delete(DELETE_QUERY, filmId);
     }
 
-    public Collection<Film> filmsSearch(String substring, String column) {
-        Collection<Film> films;
+    public Collection<Film> filmsSearch(String substring, List<String> paramsList) {
+        Collection<Film> films = List.of();
+        String stringToFind = "%" + substring.trim().toLowerCase() + "%";
 
-        if(column.equals("title")) {
-            films = findMany(QUERY_SEARCH_FILMS_BY_TITLE, "%" + substring.trim().toLowerCase() + "%");
-        } else if (column.equals("director")){
-            films = findMany(QUERY_SEARCH_FILMS_BY_TITLE, "%" + substring.trim().toLowerCase() + "%");
-        } else if (column.equals("title,director")) {
-            films = findMany(QUERY_SEARCH_FILMS_BY_TITLE_AND_DIRECTOR, substring);
+        if (paramsList.size() == 2) {
+            films = findMany(QUERY_SEARCH_FILMS_BY_TITLE_AND_DIRECTOR, stringToFind, stringToFind);
         } else {
-            throw new NotFoundException("Столбец " + column + "не найден");
+            if (paramsList.getFirst().equals("title")) {
+                films = findMany(QUERY_SEARCH_FILMS_BY_TITLE, stringToFind);
+            } else if (paramsList.getFirst().equals("director")) {
+                films = findMany(QUERY_SEARCH_FILMS_BY_DIRECTOR, stringToFind);
+            }
         }
 
         Map<Integer, Set<Genre>> genres = getAllGenres();
+        Map<Integer, Set<Director>> directors = getAllDirectors();
         for (Film film : films) {
             film.setGenres(genres.getOrDefault(film.getId(), Collections.emptySet()));
+            film.setDirectors(directors.getOrDefault(film.getId(), Collections.emptySet()));
         }
         return films;
     }

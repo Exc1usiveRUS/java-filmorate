@@ -124,14 +124,6 @@ public class FilmService {
     }
 
     public Collection<Film> filmSearch(String substring, List<String> paramsList) {
-        Collection<Film> filmsList;
-
-        if (paramsList.size() == 2) {
-            throw new NotFoundException("Поиск и по режисерам и по тайтлам в разработке");
-        } else {
-            filmsList = filmStorage.filmsSearch(substring, paramsList.getFirst());
-        }
-
-        return filmsList;
+        return filmStorage.filmsSearch(substring, paramsList);
     }
 }
