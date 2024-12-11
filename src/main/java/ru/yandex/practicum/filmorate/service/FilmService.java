@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.EventRepository;
 import ru.yandex.practicum.filmorate.dal.DirectorRepository;
 import ru.yandex.practicum.filmorate.dal.GenreRepository;
 import ru.yandex.practicum.filmorate.dal.LikesRepository;
@@ -11,6 +12,7 @@ import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -24,25 +26,33 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final GenreRepository genreRepository;
     private final LikesRepository likesRepository;
+    private final EventRepository eventRepository;
     private final UserStorage userStorage;
     private final DirectorRepository directorRepository;
 
+
     public void addLike(int filmId, int userId) {
-        Film film = filmStorage.getFilmById(filmId);
-        User user = userStorage.getUserById(userId);
-        likesRepository.addLike(film, user);
+        filmStorage.getFilmById(filmId);
+        likesRepository.addLike(filmId, userId);
+        //записываем добавление лайка в БД событий
+        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), userId, EventType.LIKE, OperationType.ADD, 0, filmId));
         log.info("User {} liked film {}", userId, filmId);
     }
 
     public void deleteLike(int filmId, int userId) {
-        Film film = filmStorage.getFilmById(filmId);
-        User user = userStorage.getUserById(userId);
-        likesRepository.deleteLike(film, user);
+        filmStorage.getFilmById(filmId);
+        likesRepository.deleteLike(filmId, userId);
+        //записываем удаление лайка в БД событий
+        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), userId, EventType.LIKE, OperationType.REMOVE, 0, filmId));
         log.info("Пользователь {} отменил лайк фильма {}", userId, filmId);
     }
 
     public Film getFilmById(Integer id) {
         return filmStorage.getFilmById(id);
+    }
+
+    public Collection<Film> getTopFilms(Integer count, Integer genreId, Integer year) {
+        return filmStorage.getTopFilms(count, genreId, year);
     }
 
     public List<Film> getFilmsByDirectorId(Integer directorId, String sortBy) {
@@ -57,10 +67,6 @@ public class FilmService {
         } else {
             return directorFilms.stream().sorted(Comparator.comparing(Film::getLikes).reversed()).toList();
         }
-    }
-
-    public Collection<Film> getTopFilms(Integer count) {
-        return filmStorage.getTopFilms(count);
     }
 
     public Collection<Film> getFilms() {
@@ -113,5 +119,9 @@ public class FilmService {
 
     public void deleteFilm(Integer id) {
         filmStorage.deleteFilm(id);
+    }
+
+    public Collection<Film> getCommonFilms(Integer userId, Integer friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 }

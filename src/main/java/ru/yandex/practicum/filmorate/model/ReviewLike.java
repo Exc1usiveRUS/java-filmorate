@@ -3,7 +3,8 @@ package ru.yandex.practicum.filmorate.model;
 import lombok.Data;
 
 @Data
-public class Like {
+public class ReviewLike {
+    private int reviewId;
     private int userId;
-    private int filmId;
+    private Boolean like;
 }

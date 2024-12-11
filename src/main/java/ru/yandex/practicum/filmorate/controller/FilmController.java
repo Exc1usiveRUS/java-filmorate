@@ -40,10 +40,18 @@ public class FilmController {
         return filmService.getFilmsByDirectorId(directorId, sortBy);
     }
 
+    @GetMapping("/common")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> getCommonFilms(@RequestParam Integer userId, @RequestParam Integer friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
     @GetMapping("/popular")
     @ResponseStatus(HttpStatus.OK)
-    public Collection<Film> getTopFilms(@RequestParam(defaultValue = "10") int count) {
-        return filmService.getTopFilms(count);
+    public Collection<Film> getTopFilms(@RequestParam(defaultValue = "10") int count,
+                                        @RequestParam(required = false) Integer genreId,
+                                        @RequestParam(required = false) Integer year) {
+        return filmService.getTopFilms(count, genreId, year);
     }
 
     @PutMapping("/{id}/like/{userId}")
@@ -67,7 +75,7 @@ public class FilmController {
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
-    public Film updateFilm(@RequestBody Film updatedFilm) {
+    public Film updateFilm(@Valid @RequestBody Film updatedFilm) {
         log.info("Обновлен фильм: {}", updatedFilm);
         return filmService.updateFilm(updatedFilm);
     }
