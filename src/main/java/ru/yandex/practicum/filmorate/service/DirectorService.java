@@ -28,7 +28,7 @@ public class DirectorService {
 
     public Director updateDirector(Director director) {
         Director updateDirector = directorRepository.findById(director.getId());
-        if(director.getName() != null) updateDirector.setName(director.getName());
+        if (director.getName() != null) updateDirector.setName(director.getName());
         return directorRepository.update(director);
     }
 
