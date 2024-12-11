@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.dal;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -63,19 +62,6 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             "GROUP BY FILM_ID) fl ON f.FILM_ID = fl.FILM_ID LEFT JOIN FILMS_DIRECTORS fd ON f.FILM_ID = fd.FILM_ID " +
             "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID WHERE LOWER(DIRECTOR_NAME) LIKE ? " +
             "ORDER BY LIKES DESC";
-
-    String s = """
-            SELECT * 
-            FROM FILMS f 
-            LEFT JOIN MPA_RATINGS m ON f.MPA_ID = m.MPA_ID 
-            LEFT JOIN (SELECT FILM_ID, COUNT(FILM_ID) AS LIKES 
-                        FROM FILMS_LIKES 
-                        GROUP BY FILM_ID) fl ON f.FILM_ID = fl.FILM_ID 
-            LEFT JOIN FILMS_DIRECTORS fd ON f.FILM_ID = fd.FILM_ID
-            LEFT JOIN DIRECTORS d ON f.DIRECTOR_ID = d.DIRECTOR_ID
-            WHERE LOWER(DIRECTOR_NAME) LIKE ?
-            ORDER BY LIKES DESC
-            """;
 
     private static final String QUERY_SEARCH_FILMS_BY_TITLE_AND_DIRECTOR = "SELECT * FROM FILMS f" +
             " LEFT JOIN MPA_RATINGS m ON f.MPA_ID = m.MPA_ID LEFT JOIN (SELECT FILM_ID, COUNT(FILM_ID) AS LIKES" +
