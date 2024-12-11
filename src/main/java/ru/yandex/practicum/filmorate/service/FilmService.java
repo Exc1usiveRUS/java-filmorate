@@ -1,10 +1,10 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.EventRepository;
+import ru.yandex.practicum.filmorate.dal.DirectorRepository;
 import ru.yandex.practicum.filmorate.dal.GenreRepository;
 import ru.yandex.practicum.filmorate.dal.LikesRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -13,25 +13,21 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class FilmService {
 
     private final FilmStorage filmStorage;
     private final GenreRepository genreRepository;
     private final LikesRepository likesRepository;
     private final EventRepository eventRepository;
+    private final DirectorRepository directorRepository;
 
-    public FilmService(@Autowired @Qualifier("filmRepository") FilmStorage filmStorage,
-                       @Autowired GenreRepository genreRepository,
-                       @Autowired LikesRepository likesRepository,
-                       @Autowired EventRepository eventRepository) {
-        this.filmStorage = filmStorage;
-        this.genreRepository = genreRepository;
-        this.likesRepository = likesRepository;
-        this.eventRepository = eventRepository;
-    }
 
     public void addLike(int filmId, int userId) {
         filmStorage.getFilmById(filmId);
@@ -57,6 +53,20 @@ public class FilmService {
         return filmStorage.getTopFilms(count, genreId, year);
     }
 
+    public List<Film> getFilmsByDirectorId(Integer directorId, String sortBy) {
+        List<Film> directorFilms = filmStorage.getFilmsByDirectorId(directorId);
+        for (Film film : directorFilms) {
+            film.setDirectors(new HashSet<>(directorRepository.findDirectorsByFilm(film.getId())));
+            film.setGenres(new HashSet<>(genreRepository.getGenresByFilm(film.getId())));
+            film.setLikes(likesRepository.getLikesByFilm(film.getId()).size());
+        }
+        if (sortBy.equals("year")) {
+            return directorFilms.stream().sorted(Comparator.comparing(Film::getReleaseDate)).toList();
+        } else {
+            return directorFilms.stream().sorted(Comparator.comparing(Film::getLikes).reversed()).toList();
+        }
+    }
+
     public Collection<Film> getFilms() {
         return filmStorage.getFilms();
     }
@@ -69,6 +79,12 @@ public class FilmService {
                     .map(Genre::getId)
                     .toList());
         }
+        if (!createdFilm.getDirectors().isEmpty()) {
+            directorRepository.addDirectors(createdFilm.getId(), createdFilm.getDirectors()
+                    .stream()
+                    .map(Director::getId)
+                    .toList());
+        }
         return createdFilm;
     }
 
@@ -77,11 +93,23 @@ public class FilmService {
             throw new NotFoundException("Фильм c таким id не найден");
         }
         Film updatedFilm = filmStorage.updateFilm(film);
+        if (film.getName() != null) updatedFilm.setName(film.getName());
+        if (film.getDescription() != null) updatedFilm.setDescription(film.getDescription());
+        if (film.getReleaseDate() != null) updatedFilm.setReleaseDate(film.getReleaseDate());
+        if (film.getDuration() != null) updatedFilm.setDuration(film.getDuration());
+        if (film.getMpa() != null) updatedFilm.setMpa(film.getMpa());
         if (!updatedFilm.getGenres().isEmpty()) {
             genreRepository.deleteGenres(updatedFilm.getId());
             genreRepository.addGenres(updatedFilm.getId(), updatedFilm.getGenres()
                     .stream()
                     .map(Genre::getId)
+                    .toList());
+        }
+        if (!updatedFilm.getDirectors().isEmpty()) {
+            directorRepository.deleteDirectorsFromFilm(updatedFilm.getId());
+            directorRepository.addDirectors(updatedFilm.getId(), updatedFilm.getDirectors()
+                    .stream()
+                    .map(Director::getId)
                     .toList());
         }
         return updatedFilm;
