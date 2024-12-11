@@ -35,8 +35,4 @@ public class DirectorService {
     public void deleteDirector(Integer id) {
         directorRepository.delete(id);
     }
-
-    public void deleteAllDirectors() {
-        directorRepository.deleteAll();
-    }
 }
