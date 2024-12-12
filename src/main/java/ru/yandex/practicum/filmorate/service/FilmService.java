@@ -73,7 +73,11 @@ public class FilmService {
     }
 
     public Collection<Film> getFilms() {
-        return filmStorage.getFilms();
+        Collection<Film> films = filmStorage.getFilms();
+        for (Film film : films) {
+            film.setDirectors(new HashSet<>(directorRepository.findDirectorsByFilm(film.getId())));
+        }
+        return films;
     }
 
     //Обратить внимание на сортировку, возможно получится сделать лучше!
