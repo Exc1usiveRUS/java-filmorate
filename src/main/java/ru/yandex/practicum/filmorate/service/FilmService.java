@@ -10,12 +10,11 @@ import ru.yandex.practicum.filmorate.dal.LikesRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.Instant;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -27,6 +26,7 @@ public class FilmService {
     private final LikesRepository likesRepository;
     private final EventRepository eventRepository;
     private final DirectorRepository directorRepository;
+    private final UserStorage userStorage;
 
 
     public void addLike(int filmId, int userId) {
@@ -39,6 +39,7 @@ public class FilmService {
 
     public void deleteLike(int filmId, int userId) {
         filmStorage.getFilmById(filmId);
+        userStorage.getUserById(userId);
         likesRepository.deleteLike(filmId, userId);
         //записываем удаление лайка в БД событий
         eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), userId, EventType.LIKE, OperationType.REMOVE, 0, filmId));
@@ -46,7 +47,10 @@ public class FilmService {
     }
 
     public Film getFilmById(Integer id) {
-        return filmStorage.getFilmById(id);
+        Film film = filmStorage.getFilmById(id);
+        if (directorRepository.findDirectorsByFilm(id) != null)
+            film.setDirectors(new HashSet<>(directorRepository.findDirectorsByFilm(film.getId())));
+        return film;
     }
 
     public Collection<Film> getTopFilms(Integer count, Integer genreId, Integer year) {
@@ -54,6 +58,7 @@ public class FilmService {
     }
 
     public List<Film> getFilmsByDirectorId(Integer directorId, String sortBy) {
+        directorRepository.findById(directorId);
         List<Film> directorFilms = filmStorage.getFilmsByDirectorId(directorId);
         for (Film film : directorFilms) {
             film.setDirectors(new HashSet<>(directorRepository.findDirectorsByFilm(film.getId())));
@@ -79,6 +84,10 @@ public class FilmService {
                     .map(Genre::getId)
                     .toList());
         }
+        film.setGenres(film.getGenres()
+                .stream()
+                .sorted(Comparator.comparingInt(Genre::getId))
+                .collect(Collectors.toCollection(LinkedHashSet::new)));
         if (!createdFilm.getDirectors().isEmpty()) {
             directorRepository.addDirectors(createdFilm.getId(), createdFilm.getDirectors()
                     .stream()
@@ -104,14 +113,20 @@ public class FilmService {
                     .stream()
                     .map(Genre::getId)
                     .toList());
-        }
+            updatedFilm.setGenres(updatedFilm.getGenres()
+                    .stream()
+                    .sorted(Comparator.comparingInt(Genre::getId))
+                    .collect(Collectors.toCollection(LinkedHashSet::new)));
+        } else
+            genreRepository.deleteGenres(updatedFilm.getId());
         if (!updatedFilm.getDirectors().isEmpty()) {
             directorRepository.deleteDirectorsFromFilm(updatedFilm.getId());
             directorRepository.addDirectors(updatedFilm.getId(), updatedFilm.getDirectors()
                     .stream()
                     .map(Director::getId)
                     .toList());
-        }
+        } else
+            directorRepository.deleteDirectorsFromFilm(updatedFilm.getId());
         return updatedFilm;
     }
 
