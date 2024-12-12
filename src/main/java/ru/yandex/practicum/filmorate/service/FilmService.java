@@ -76,6 +76,7 @@ public class FilmService {
         return filmStorage.getFilms();
     }
 
+    //Обратить внимание на сортировку, возможно получится сделать лучше!
     public Film addFilm(Film film) {
         Film createdFilm = filmStorage.addFilm(film);
         if (!createdFilm.getGenres().isEmpty()) {
@@ -97,6 +98,7 @@ public class FilmService {
         return createdFilm;
     }
 
+    //Обратить внимание на сортировку, возможно получится сделать лучше!
     public Film updateFilm(Film film) {
         if (filmStorage.getFilmById(film.getId()) == null) {
             throw new NotFoundException("Фильм c таким id не найден");
