@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -84,5 +85,12 @@ public class FilmController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteFilm(@PathVariable int id) {
         filmService.deleteFilm(id);
+    }
+
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> filmSearch(@RequestParam(name = "query") String substring,
+                                       @RequestParam(name = "by") @Size(min = 1, max = 2) List<String> paramsList) {
+        return filmService.filmSearch(substring, paramsList);
     }
 }

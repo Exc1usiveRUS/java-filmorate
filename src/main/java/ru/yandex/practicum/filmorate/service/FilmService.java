@@ -122,4 +122,8 @@ public class FilmService {
     public Collection<Film> getCommonFilms(Integer userId, Integer friendId) {
         return filmStorage.getCommonFilms(userId, friendId);
     }
+
+    public Collection<Film> filmSearch(String substring, List<String> paramsList) {
+        return filmStorage.filmsSearch(substring, paramsList);
+    }
 }
