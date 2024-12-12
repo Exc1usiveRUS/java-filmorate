@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -9,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/films")
@@ -28,6 +30,15 @@ public class FilmController {
     @ResponseStatus(HttpStatus.OK)
     public Film getFilmById(@PathVariable int id) {
         return filmService.getFilmById(id);
+    }
+
+    @GetMapping("/director/{directorId}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> getFilmsByDirectorId(@PathVariable int directorId, @RequestParam(defaultValue = "year") String sortBy) {
+        if (!sortBy.equals("year") && !sortBy.equals("likes")) {
+            throw new IllegalArgumentException("Неверное значение сортировки");
+        }
+        return filmService.getFilmsByDirectorId(directorId, sortBy);
     }
 
     @GetMapping("/common")
@@ -65,7 +76,7 @@ public class FilmController {
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
-    public Film updateFilm(@Valid @RequestBody Film updatedFilm) {
+    public Film updateFilm(@RequestBody Film updatedFilm) {
         log.info("Обновлен фильм: {}", updatedFilm);
         return filmService.updateFilm(updatedFilm);
     }
@@ -74,5 +85,12 @@ public class FilmController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteFilm(@PathVariable int id) {
         filmService.deleteFilm(id);
+    }
+
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> filmSearch(@RequestParam(name = "query") String substring,
+                                       @RequestParam(name = "by") @Size(min = 1, max = 2) List<String> paramsList) {
+        return filmService.filmSearch(substring, paramsList);
     }
 }

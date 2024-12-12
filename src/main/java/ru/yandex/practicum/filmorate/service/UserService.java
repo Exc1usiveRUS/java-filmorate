@@ -33,8 +33,7 @@ public class UserService {
                        @Autowired FriendshipRepository friendshipRepository,
                        @Autowired LikesRepository likesRepository,
                        @Autowired FilmRepository filmRepository,
-                       @Autowired EventRepository eventRepository)
-     {
+                       @Autowired EventRepository eventRepository) {
         this.userStorage = userStorage;
         this.friendshipRepository = friendshipRepository;
         this.likesRepository = likesRepository;
@@ -47,7 +46,7 @@ public class UserService {
         Set<Integer> filmIdsForRecommendation = new HashSet<>();
         // получаем множество id-шников фильмов, лайкнутых пользователем
         Set<Integer> filmsLikedByUser = new HashSet<>(likesRepository.getLikesByUser(userId)
-                        .stream().map(Like::getFilmId).toList());
+                .stream().map(Like::getFilmId).toList());
         // создаем мапу, куда будем записывать id пользователей и количство лайков, совпадающих с нужным пользователем
         HashMap<Integer, Integer> usersLikes = new HashMap<>();
         // перебор всех пользователей
