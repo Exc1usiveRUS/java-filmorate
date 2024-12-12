@@ -35,7 +35,7 @@ public class ReviewService {
                 .toList().reversed();
         if (filmId != null) {
             reviews = reviews.stream()
-                    .filter(review -> review.getFilmId() == filmId)
+                    .filter(review -> review.getFilmId().equals(filmId))
                     .toList();
         }
         if (count == 0 || count > reviews.size())
