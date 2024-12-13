@@ -8,14 +8,13 @@ import ru.yandex.practicum.filmorate.model.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 
 @Service
 public class ReviewService {
 
     @Autowired
-    private ReviewRepository reviewRepository;
+    ReviewRepository reviewRepository;
     @Autowired
     UserRepository userRepository;
     @Autowired
@@ -31,14 +30,15 @@ public class ReviewService {
 
     public Collection<Review> getAllReviews(Integer filmId, Integer count) {
         List<Review> reviews = reviewRepository.getAll().stream()
-                .sorted(Comparator.comparingInt(Review::getUseful))
-                .toList().reversed();
+                //.sorted(Comparator.comparingInt(Review::getUseful))
+                .toList();
         if (filmId != null) {
             reviews = reviews.stream()
                     .filter(review -> review.getFilmId().equals(filmId))
+                    //.sorted(Comparator.comparingInt(Review::getUseful))
                     .toList();
         }
-        if (count == 0 || count > reviews.size())
+        if (count == null || count == 0 || count >= reviews.size())
             return reviews;
         else {
             List<Review> topReviews = new ArrayList<>();
@@ -54,7 +54,7 @@ public class ReviewService {
         filmRepository.getFilmById(review.getFilmId());
         Review reviewWithId = reviewRepository.addReview(review);
         //запись события
-        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), review.getUserId(), EventType.REVIEW,
+        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), reviewWithId.getUserId(), EventType.REVIEW,
                 OperationType.ADD, 0, reviewWithId.getReviewId()));
         return reviewWithId;
     }
@@ -63,9 +63,10 @@ public class ReviewService {
         userRepository.getUserById(review.getUserId());
         filmRepository.getFilmById(review.getFilmId());
         //запись события
-        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), review.getUserId(), EventType.REVIEW,
+        Review updatedReview = reviewRepository.updateReview(review);
+        eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), updatedReview.getUserId(), EventType.REVIEW,
                 OperationType.UPDATE, 0, review.getReviewId()));
-        return reviewRepository.updateReview(review);
+        return updatedReview;
     }
 
     public void deleteReview(Integer reviewId) {
