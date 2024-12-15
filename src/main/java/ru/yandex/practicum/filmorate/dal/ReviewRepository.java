@@ -10,15 +10,14 @@ import java.util.Collection;
 @Repository
 public class ReviewRepository extends BaseRepository<Review> {
 
-    private static final String SELECT_ALL_REVIEWS = "SELECT * FROM REVIEWS";
+    private static final String SELECT_ALL_REVIEWS = "SELECT * FROM REVIEWS ORDER BY USEFUL DESC";
     private static final String SELECT_BY_ID = "SELECT * FROM REVIEWS WHERE REVIEW_ID = ?";
     private static final String INSERT_INTO_REVIEWS = "INSERT INTO REVIEWS (CONTENT, IS_POSITIVE, USER_ID, FILM_ID, USEFUL) " +
             "VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_REVIEW = "UPDATE REVIEWS SET " +
-            "CONTENT = ?, IS_POSITIVE = ?, USER_ID = ?, FILM_ID = ? WHERE REVIEW_ID = ?";
+            "CONTENT = ?, IS_POSITIVE = ? WHERE REVIEW_ID = ?"; //USER_ID = ?, FILM_ID = ?
     private static final String DELETE_REVIEW = "DELETE FROM REVIEWS WHERE REVIEW_ID = ?";
     private static final String UPDATE_USEFUL = "UPDATE REVIEWS SET USEFUL = ? WHERE REVIEW_ID = ?";
-
 
     public ReviewRepository(JdbcTemplate jdbc, RowMapper<Review> mapper) {
         super(jdbc, mapper);
@@ -33,26 +32,24 @@ public class ReviewRepository extends BaseRepository<Review> {
     }
 
     public Review addReview(Review review) {
-        review.setReviewId(insert(INSERT_INTO_REVIEWS,
+        int reviewId = insert(INSERT_INTO_REVIEWS,
                 review.getContent(),
                 review.getIsPositive(),
                 review.getUserId(),
                 review.getFilmId(),
-                0));
-        review.setUseful(0);
-        return review;
+                0);
+        return getReviewById(reviewId);
     }
 
     public Review updateReview(Review review) {
+        if (review.getUseful() == null) review.setUseful(0);
         update(UPDATE_REVIEW,
                 review.getContent(),
                 review.getIsPositive(),
-                review.getUserId(),
-                review.getFilmId(),
-                review.getReviewId());
-        if (review.getUseful() == null)
-            review.setUseful(0);
-        return review;
+                review.getReviewId()
+                );
+
+        return getReviewById(review.getReviewId());
     }
 
     public void deleteReview(Integer reviewId) {
