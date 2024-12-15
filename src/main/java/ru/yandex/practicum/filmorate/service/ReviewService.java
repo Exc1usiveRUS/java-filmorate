@@ -30,7 +30,7 @@ public class ReviewService {
 
     public Collection<Review> getAllReviews(Integer filmId, Integer count) {
         Collection<Review> reviews;
-        if(filmId != null) {
+        if (filmId != null) {
             reviews = reviewRepository.getReviewsByFilm(filmId).stream()
                     .sorted(Comparator.comparingInt(Review::getUseful).reversed())
                     .toList();
