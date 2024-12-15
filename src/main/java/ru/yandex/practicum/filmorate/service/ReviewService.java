@@ -88,23 +88,16 @@ public class ReviewService {
         userRepository.getUserById(userId);
         Review review = reviewRepository.getReviewById(reviewId);
         if (likesRepository.getLike(reviewId, userId) != null) {
-            review.setUseful(review.getUseful() - 1);
+            if (likesRepository.getLike(reviewId, userId).getLike())
+                review.setUseful(review.getUseful() - 1);
+            else
+                review.setUseful(review.getUseful() + 1);
             reviewRepository.updateUseful(review.getUseful(), reviewId);
             likesRepository.deleteLike(reviewId, userId);
         }
         return review;
     }
 
-    public Review deleteDislike(Integer reviewId, Integer userId) {
-        userRepository.getUserById(userId);
-        Review review = reviewRepository.getReviewById(reviewId);
-        if (likesRepository.getLike(reviewId, userId) != null) {
-            review.setUseful(review.getUseful() + 1);
-            reviewRepository.updateUseful(review.getUseful(), reviewId);
-            likesRepository.deleteLike(reviewId, userId);
-        }
-        return review;
-    }
 
     public Review dislike(Integer reviewId, Integer userId) {
         userRepository.getUserById(userId);
