@@ -146,6 +146,6 @@ public class FilmService {
     }
 
     public Collection<Film> filmSearch(String substring, List<String> paramsList) {
-        return filmStorage.filmsSearch(substring, paramsList);
+        return filmStorage.filmsSearch(substring, paramsList.contains("title"), paramsList.contains("director"));
     }
 }
