@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -90,7 +92,7 @@ public class FilmController {
 
     @GetMapping("/search")
     @ResponseStatus(HttpStatus.OK)
-    public Collection<Film> filmSearch(@RequestParam(name = "query") String substring,
+    public Collection<Film> filmSearch(@RequestParam(name = "query") @NotNull @NotBlank String substring,
                                        @RequestParam(name = "by") @Size(min = 1, max = 2) List<String> paramsList) {
         return filmService.filmSearch(substring, paramsList);
     }

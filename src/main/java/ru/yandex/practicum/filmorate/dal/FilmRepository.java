@@ -157,16 +157,16 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         delete(DELETE_QUERY, filmId);
     }
 
-    public Collection<Film> filmsSearch(String substring, List<String> paramsList) {
+    public Collection<Film> filmsSearch(String substring, boolean byTitle, boolean byDirector) {
         Collection<Film> films = List.of();
         String stringToFind = "%" + substring.trim().toLowerCase() + "%";
 
-        if (paramsList.size() == 2) {
+        if (byTitle && byDirector) {
             films = findMany(QUERY_SEARCH_FILMS_BY_TITLE_AND_DIRECTOR, stringToFind, stringToFind);
         } else {
-            if (paramsList.getFirst().equals("title")) {
+            if (byTitle) {
                 films = findMany(QUERY_SEARCH_FILMS_BY_TITLE, stringToFind);
-            } else if (paramsList.getFirst().equals("director")) {
+            } else if (byDirector) {
                 films = findMany(QUERY_SEARCH_FILMS_BY_DIRECTOR, stringToFind);
             }
         }

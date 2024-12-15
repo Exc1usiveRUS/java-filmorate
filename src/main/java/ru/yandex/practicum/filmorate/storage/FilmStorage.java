@@ -17,7 +17,7 @@ public interface FilmStorage {
 
     Film getFilmById(Integer filmId);
 
-    Collection<Film> filmsSearch(String title, List<String> field);
+    Collection<Film> filmsSearch(String title, boolean byTitle, boolean biDirector);
 
     Collection<Film> getTopFilms(Integer count, Integer genreId, Integer year);
 
