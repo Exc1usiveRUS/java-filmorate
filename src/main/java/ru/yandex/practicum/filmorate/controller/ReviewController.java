@@ -14,9 +14,8 @@ import java.util.Collection;
 @RequestMapping("/reviews")
 @RequiredArgsConstructor
 public class ReviewController {
-
     @Autowired
-    private ReviewService reviewService;
+    private final ReviewService reviewService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

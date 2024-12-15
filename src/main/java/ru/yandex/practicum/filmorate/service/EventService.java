@@ -16,6 +16,7 @@ import java.util.Collection;
 public class EventService {
     @Autowired
     private final EventRepository eventRepository;
+    @Autowired
     private final UserStorage userStorage;
 
     public Collection<Event> getFeed(int userId) {

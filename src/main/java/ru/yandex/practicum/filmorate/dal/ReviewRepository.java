@@ -12,6 +12,7 @@ public class ReviewRepository extends BaseRepository<Review> {
 
     private static final String SELECT_ALL_REVIEWS = "SELECT * FROM REVIEWS ORDER BY USEFUL DESC";
     private static final String SELECT_BY_ID = "SELECT * FROM REVIEWS WHERE REVIEW_ID = ?";
+    private static final String GET_REVIEWS_BY_FILM_QUERY = "SELECT * FROM REVIEWS WHERE FILM_ID = ?";
     private static final String INSERT_INTO_REVIEWS = "INSERT INTO REVIEWS (CONTENT, IS_POSITIVE, USER_ID, FILM_ID, USEFUL) " +
             "VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_REVIEW = "UPDATE REVIEWS SET " +
@@ -25,6 +26,10 @@ public class ReviewRepository extends BaseRepository<Review> {
 
     public Collection<Review> getAll() {
         return findMany(SELECT_ALL_REVIEWS);
+    }
+
+    public Collection<Review> getReviewsByFilm(int filmId) {
+        return findMany(GET_REVIEWS_BY_FILM_QUERY, filmId);
     }
 
     public Review getReviewById(int reviewId) {

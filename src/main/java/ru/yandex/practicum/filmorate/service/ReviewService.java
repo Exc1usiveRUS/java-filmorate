@@ -1,51 +1,46 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.*;
 import ru.yandex.practicum.filmorate.model.*;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.Comparator;
 
 @Service
+@RequiredArgsConstructor
 public class ReviewService {
-
     @Autowired
-    ReviewRepository reviewRepository;
+    private final ReviewRepository reviewRepository;
     @Autowired
-    UserRepository userRepository;
+    private final UserRepository userRepository;
     @Autowired
-    FilmRepository filmRepository;
+    private final FilmRepository filmRepository;
     @Autowired
-    ReviewsLikesRepository likesRepository;
+    private final ReviewsLikesRepository likesRepository;
     @Autowired
-    EventRepository eventRepository;
+    private final EventRepository eventRepository;
 
     public Review getReviewById(Integer reviewId) {
         return reviewRepository.getReviewById(reviewId);
     }
 
     public Collection<Review> getAllReviews(Integer filmId, Integer count) {
-        List<Review> reviews = reviewRepository.getAll().stream()
-                //.sorted(Comparator.comparingInt(Review::getUseful))
-                .toList();
-        if (filmId != null) {
-            reviews = reviews.stream()
-                    .filter(review -> review.getFilmId().equals(filmId))
-                    //.sorted(Comparator.comparingInt(Review::getUseful))
+        Collection<Review> reviews;
+        if(filmId != null) {
+            reviews = reviewRepository.getReviewsByFilm(filmId).stream()
+                    .sorted(Comparator.comparingInt(Review::getUseful).reversed())
                     .toList();
+        } else {
+            reviews = reviewRepository.getAll();
         }
-        if (count == null || count == 0 || count >= reviews.size())
+        if (count == null || count == 0 || count >= reviews.size()) {
             return reviews;
-        else {
-            List<Review> topReviews = new ArrayList<>();
-            for (int i = 0; i < count; i++) {
-                topReviews.add(reviews.get(i));
-            }
-            return topReviews;
+        } else {
+            return reviews.stream().limit(count).toList();
         }
     }
 
@@ -53,7 +48,6 @@ public class ReviewService {
         userRepository.getUserById(review.getUserId());
         filmRepository.getFilmById(review.getFilmId());
         Review reviewWithId = reviewRepository.addReview(review);
-        //запись события
         eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), reviewWithId.getUserId(), EventType.REVIEW,
                 OperationType.ADD, 0, reviewWithId.getReviewId()));
         return reviewWithId;
@@ -62,7 +56,6 @@ public class ReviewService {
     public Review updateReview(Review review) {
         userRepository.getUserById(review.getUserId());
         filmRepository.getFilmById(review.getFilmId());
-        //запись события
         Review updatedReview = reviewRepository.updateReview(review);
         eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), updatedReview.getUserId(), EventType.REVIEW,
                 OperationType.UPDATE, 0, review.getReviewId()));
@@ -70,7 +63,6 @@ public class ReviewService {
     }
 
     public void deleteReview(Integer reviewId) {
-        // сохраняем удаляемый Review, чтобы после иметь возможность взять из него нужные данные для записи события
         Review review = getReviewById(reviewId);
         reviewRepository.deleteReview(reviewId);
         eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), review.getUserId(), EventType.REVIEW,
@@ -96,10 +88,11 @@ public class ReviewService {
         userRepository.getUserById(userId);
         Review review = reviewRepository.getReviewById(reviewId);
         if (likesRepository.getLike(reviewId, userId) != null) {
-            if (status)
+            if (status) {
                 review.setUseful(review.getUseful() - 1);
-            else
+            } else {
                 review.setUseful(review.getUseful() + 1);
+            }
             reviewRepository.updateUseful(review.getUseful(), reviewId);
             likesRepository.deleteLike(reviewId, userId);
         }

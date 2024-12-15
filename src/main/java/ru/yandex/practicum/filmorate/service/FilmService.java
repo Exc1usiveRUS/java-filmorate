@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.EventRepository;
 import ru.yandex.practicum.filmorate.dal.DirectorRepository;
@@ -20,19 +21,22 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class FilmService {
-
+    @Autowired
     private final FilmStorage filmStorage;
+    @Autowired
     private final GenreRepository genreRepository;
+    @Autowired
     private final LikesRepository likesRepository;
+    @Autowired
     private final EventRepository eventRepository;
+    @Autowired
     private final DirectorRepository directorRepository;
+    @Autowired
     private final UserStorage userStorage;
-
 
     public void addLike(int filmId, int userId) {
         filmStorage.getFilmById(filmId);
         likesRepository.addLike(filmId, userId);
-        //записываем добавление лайка в БД событий
         eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), userId, EventType.LIKE, OperationType.ADD, 0, filmId));
         log.info("User {} liked film {}", userId, filmId);
     }
@@ -41,7 +45,6 @@ public class FilmService {
         filmStorage.getFilmById(filmId);
         userStorage.getUserById(userId);
         likesRepository.deleteLike(filmId, userId);
-        //записываем удаление лайка в БД событий
         eventRepository.addEvent(new Event(Instant.now().toEpochMilli(), userId, EventType.LIKE, OperationType.REMOVE, 0, filmId));
         log.info("Пользователь {} отменил лайк фильма {}", userId, filmId);
     }
@@ -80,7 +83,6 @@ public class FilmService {
         return films;
     }
 
-    //Обратить внимание на сортировку, возможно получится сделать лучше!
     public Film addFilm(Film film) {
         Film createdFilm = filmStorage.addFilm(film);
         if (!createdFilm.getGenres().isEmpty()) {
@@ -102,7 +104,6 @@ public class FilmService {
         return createdFilm;
     }
 
-    //Обратить внимание на сортировку, возможно получится сделать лучше
     public Film updateFilm(Film film) {
         if (filmStorage.getFilmById(film.getId()) == null) {
             throw new NotFoundException("Фильм c таким id не найден");
