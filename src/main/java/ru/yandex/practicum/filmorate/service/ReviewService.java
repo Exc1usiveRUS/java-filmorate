@@ -124,5 +124,4 @@ public class ReviewService {
         reviewRepository.updateUseful(review.getUseful(), reviewId);
         return review;
     }
-
 }
