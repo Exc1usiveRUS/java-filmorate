@@ -25,8 +25,10 @@ public class Film {
     @MinimumDate
     private LocalDate releaseDate;
     @Positive
-    private int duration;
+    private Integer duration;
     private Set<Genre> genres = new HashSet<>();
+    private Set<Director> directors = new HashSet<>();
     private Mpa mpa;
+    private long likes;
 
 }

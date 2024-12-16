@@ -80,7 +80,7 @@ class FilmRepositoryTest {
         filmRepository.addFilm(film1);
         filmRepository.addFilm(film2);
         filmRepository.addFilm(film3);
-        assertThat(filmRepository.getTopFilms(10)).isNotEmpty();
+        assertThat(filmRepository.getTopFilms(10, null, null)).isNotEmpty();
     }
 
     @Test

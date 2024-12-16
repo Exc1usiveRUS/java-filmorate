@@ -1,21 +1,26 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/films")
 @Slf4j
 @RequiredArgsConstructor
 public class FilmController {
-
+    @Autowired
     private final FilmService filmService;
 
     @GetMapping
@@ -30,20 +35,37 @@ public class FilmController {
         return filmService.getFilmById(id);
     }
 
+    @GetMapping("/director/{directorId}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> getFilmsByDirectorId(@PathVariable int directorId, @RequestParam(defaultValue = "year") String sortBy) {
+        if (!sortBy.equals("year") && !sortBy.equals("likes")) {
+            throw new IllegalArgumentException("Неверное значение сортировки");
+        }
+        return filmService.getFilmsByDirectorId(directorId, sortBy);
+    }
+
+    @GetMapping("/common")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> getCommonFilms(@RequestParam Integer userId, @RequestParam Integer friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
     @GetMapping("/popular")
     @ResponseStatus(HttpStatus.OK)
-    public Collection<Film> getTopFilms(@RequestParam(defaultValue = "10") int count) {
-        return filmService.getTopFilms(count);
+    public Collection<Film> getTopFilms(@RequestParam(defaultValue = "10") int count,
+                                        @RequestParam(required = false) Integer genreId,
+                                        @RequestParam(required = false) Integer year) {
+        return filmService.getTopFilms(count, genreId, year);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void addLike(@PathVariable int id, @PathVariable int userId) {
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.OK)
     public void deleteLike(@PathVariable int id, @PathVariable int userId) {
         filmService.deleteLike(id, userId);
     }
@@ -57,7 +79,7 @@ public class FilmController {
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
-    public Film updateFilm(@Valid @RequestBody Film updatedFilm) {
+    public Film updateFilm(@RequestBody Film updatedFilm) {
         log.info("Обновлен фильм: {}", updatedFilm);
         return filmService.updateFilm(updatedFilm);
     }
@@ -66,5 +88,12 @@ public class FilmController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteFilm(@PathVariable int id) {
         filmService.deleteFilm(id);
+    }
+
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> filmSearch(@RequestParam(name = "query") @NotNull @NotBlank String substring,
+                                       @RequestParam(name = "by") @Size(min = 1, max = 2) List<String> paramsList) {
+        return filmService.filmSearch(substring, paramsList);
     }
 }
